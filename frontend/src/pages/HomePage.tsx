@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { Clock, Shield, Wrench, Star, Phone, CheckCircle2 } from "lucide-react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { services } from "../data/services";
@@ -7,10 +8,30 @@ import { useI18n } from "../i18n/useI18n";
 import { imageUrl } from "../lib/images";
 import { TechGears } from "../components/TechGears";
 import { TechLines } from "../components/TechLines";
-import { InteractiveCar } from "../components/InteractiveCar";
+const LazyInteractiveCar = lazy(() =>
+  import("../components/InteractiveCar").then((m) => ({ default: m.InteractiveCar }))
+);
 
 export default function HomePage() {
   const { t } = useI18n();
+  const interactiveRef = useRef<HTMLDivElement | null>(null);
+  const [showInteractive, setShowInteractive] = useState(false);
+
+  useEffect(() => {
+    const el = interactiveRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setShowInteractive(true);
+          obs.disconnect();
+        }
+      },
+      { rootMargin: "300px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   return (
     <div>
@@ -22,6 +43,8 @@ export default function HomePage() {
             src={imageUrl("hero-main-2560x1200.jpg")}
             alt="TURBOSERVIS"
             className="h-full w-full object-cover"
+            decoding="async"
+            fetchPriority="high"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-dark/98 via-dark/90 to-dark/80" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(16,185,129,0.15),transparent_60%)]" />
@@ -174,10 +197,18 @@ export default function HomePage() {
       </section>
 
       {/* INTERACTIVE CAR DIAGNOSTICS */}
-      <section className="relative">
-        <InteractiveCar 
-          services={services} 
-        />
+      <section ref={interactiveRef} className="relative">
+        {showInteractive ? (
+          <Suspense
+            fallback={
+              <div className="min-h-[520px] bg-dark-50 border-y border-primary-500/20 animate-pulse" />
+            }
+          >
+            <LazyInteractiveCar services={services} />
+          </Suspense>
+        ) : (
+          <div className="min-h-[520px] bg-dark-50 border-y border-primary-500/20" />
+        )}
       </section>
 
       {/* CTA БАННЕР */}

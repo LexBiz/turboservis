@@ -3,6 +3,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { randomBytes } from "node:crypto";
 import express from "express";
+import compression from "compression";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -20,6 +21,7 @@ const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN ?? "http://localhost:5173";
 const IS_DEV = process.env.NODE_ENV !== "production";
 
 app.set("trust proxy", 1);
+app.disable("x-powered-by");
 // NOTE: We currently deploy over plain HTTP (IP:PORT). Helmet's default CSP includes
 // `upgrade-insecure-requests`, which forces the browser to upgrade JS/CSS/image requests to HTTPS,
 // causing `net::ERR_SSL_PROTOCOL_ERROR` and a white page. Disable CSP until HTTPS is configured.
@@ -28,6 +30,7 @@ app.use(
     contentSecurityPolicy: false
   })
 );
+app.use(compression());
 app.use(morgan("dev"));
 app.use(
   cors({
@@ -102,7 +105,25 @@ app.get("/api/leads", async (req, res) => {
 // Production: serve frontend build if present (SPA fallback)
 const distDir = path.resolve(process.cwd(), "../frontend/dist");
 if (fs.existsSync(distDir)) {
-  app.use(express.static(distDir));
+  app.use(
+    express.static(distDir, {
+      setHeaders(res, filePath) {
+        // Cache policy:
+        // - index.html: never cache (so updates show immediately)
+        // - hashed assets: cache forever
+        // - other static (images): cache 7 days
+        if (filePath.endsWith("index.html")) {
+          res.setHeader("Cache-Control", "no-cache");
+          return;
+        }
+        if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+          return;
+        }
+        res.setHeader("Cache-Control", "public, max-age=604800");
+      }
+    })
+  );
   app.get("*", (_req, res) => {
     res.sendFile(path.join(distDir, "index.html"));
   });

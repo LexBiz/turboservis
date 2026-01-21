@@ -4,7 +4,7 @@ import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { services } from "../data/services";
 import { useI18n } from "../i18n/useI18n";
-import { heroImage, serviceImage } from "../lib/images";
+import { heroSources, serviceSources } from "../lib/images";
 import { TechLines } from "../components/TechLines";
 
 export default function ServicesPage() {
@@ -14,7 +14,16 @@ export default function ServicesPage() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          <img src={heroImage("services", lang)} alt="Services" className="h-full w-full object-cover object-center" />
+          {(() => {
+            const hero = heroSources("services", lang);
+            return (
+              <picture>
+                <source type="image/webp" srcSet={hero.webpSrcSet} sizes={hero.sizes} />
+                <source type="image/jpeg" srcSet={hero.jpgSrcSet} sizes={hero.sizes} />
+                <img src={hero.src} alt="Services" className="h-full w-full object-cover object-center" decoding="async" />
+              </picture>
+            );
+          })()}
           <div className="absolute inset-0 bg-gradient-to-r from-dark/95 via-dark/80 to-dark/85" />
         </div>
 
@@ -42,14 +51,25 @@ export default function ServicesPage() {
                 <div className="p-8">
                   {/* service image (if exists in /public/images) */}
                   <div className="relative mb-6 overflow-hidden rounded-xl border border-white/10 aspect-square bg-dark">
-                    <img
-                      src={serviceImage(service.id, lang)}
-                      alt={t(`svc.${service.id}.t`)}
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        (e.currentTarget.parentElement as HTMLElement | null)?.classList.add("hidden");
-                      }}
-                    />
+                    {(() => {
+                      const s = serviceSources(service.id, lang);
+                      return (
+                        <picture>
+                          <source type="image/webp" srcSet={s.webpSrcSet} sizes={s.sizes} />
+                          <source type="image/jpeg" srcSet={s.jpgSrcSet} sizes={s.sizes} />
+                          <img
+                            src={s.src}
+                            alt={t(`svc.${service.id}.t`)}
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                            decoding="async"
+                            onError={(e) => {
+                              (e.currentTarget.parentElement as HTMLElement | null)?.classList.add("hidden");
+                            }}
+                          />
+                        </picture>
+                      );
+                    })()}
                     <div className="absolute inset-0 ring-1 ring-white/5" />
                   </div>
 

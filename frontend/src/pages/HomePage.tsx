@@ -5,7 +5,7 @@ import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { services } from "../data/services";
 import { useI18n } from "../i18n/useI18n";
-import { imageUrl } from "../lib/images";
+import { heroMainSources, imageUrl } from "../lib/images";
 import { TechGears } from "../components/TechGears";
 import { TechLines } from "../components/TechLines";
 const LazyInteractiveCar = lazy(() =>
@@ -39,13 +39,22 @@ export default function HomePage() {
       <section className="relative overflow-hidden">
         {/* Hero background image */}
         <div className="absolute inset-0">
-          <img
-            src={imageUrl("hero-main-2560x1200.jpg")}
-            alt="TURBOSERVIS"
-            className="h-full w-full object-cover"
-            decoding="async"
-            fetchPriority="high"
-          />
+          {(() => {
+            const hero = heroMainSources();
+            return (
+              <picture>
+                <source type="image/webp" srcSet={hero.webpSrcSet} sizes={hero.sizes} />
+                <source type="image/jpeg" srcSet={hero.jpgSrcSet} sizes={hero.sizes} />
+                <img
+                  src={hero.src}
+                  alt="TURBOSERVIS"
+                  className="h-full w-full object-cover"
+                  decoding="async"
+                  fetchPriority="high"
+                />
+              </picture>
+            );
+          })()}
           <div className="absolute inset-0 bg-gradient-to-r from-dark/98 via-dark/90 to-dark/80" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(16,185,129,0.15),transparent_60%)]" />
         </div>

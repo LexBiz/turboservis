@@ -12,7 +12,7 @@ import {
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { useI18n } from "../i18n/useI18n";
-import { heroImage } from "../lib/images";
+import { heroSources } from "../lib/images";
 
 export default function AboutPage() {
   const { t, lang } = useI18n();
@@ -21,7 +21,16 @@ export default function AboutPage() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          <img src={heroImage("about", lang)} alt="About" className="h-full w-full object-cover object-center" />
+          {(() => {
+            const hero = heroSources("about", lang);
+            return (
+              <picture>
+                <source type="image/webp" srcSet={hero.webpSrcSet} sizes={hero.sizes} />
+                <source type="image/jpeg" srcSet={hero.jpgSrcSet} sizes={hero.sizes} />
+                <img src={hero.src} alt="About" className="h-full w-full object-cover object-center" decoding="async" />
+              </picture>
+            );
+          })()}
           <div className="absolute inset-0 bg-gradient-to-r from-dark/95 via-dark/80 to-dark/85" />
         </div>
 

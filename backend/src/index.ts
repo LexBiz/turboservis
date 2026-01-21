@@ -20,7 +20,14 @@ const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN ?? "http://localhost:5173";
 const IS_DEV = process.env.NODE_ENV !== "production";
 
 app.set("trust proxy", 1);
-app.use(helmet());
+// NOTE: We currently deploy over plain HTTP (IP:PORT). Helmet's default CSP includes
+// `upgrade-insecure-requests`, which forces the browser to upgrade JS/CSS/image requests to HTTPS,
+// causing `net::ERR_SSL_PROTOCOL_ERROR` and a white page. Disable CSP until HTTPS is configured.
+app.use(
+  helmet({
+    contentSecurityPolicy: false
+  })
+);
 app.use(morgan("dev"));
 app.use(
   cors({

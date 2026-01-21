@@ -1,0 +1,21 @@
+{
+  "name": "turboservis",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Turboservis website + lead request form (frontend + backend).",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently -n FRONT,BACK -c cyan,magenta \"npm:dev --workspace frontend\" \"npm:dev --workspace backend\"",
+    "build": "npm run build --workspace backend && npm run build --workspace frontend",
+    "start": "npm run start --workspace backend",
+    "lint": "npm run lint --workspace frontend && npm run lint --workspace backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
+
+

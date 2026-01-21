@@ -1,0 +1,119 @@
+import "dotenv/config";
+import path from "node:path";
+import fs from "node:fs";
+import { randomBytes } from "node:crypto";
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import rateLimit from "express-rate-limit";
+import { leadSchema } from "./validation/leadSchema.js";
+import { appendLead, listLeads } from "./storage/leadsStore.js";
+
+const app = express();
+
+// Default ports (dev):
+// - frontend: 3000
+// - backend:  3001
+const PORT = Number(process.env.PORT ?? 3001);
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN ?? "http://localhost:5173";
+const IS_DEV = process.env.NODE_ENV !== "production";
+
+app.set("trust proxy", 1);
+app.use(helmet());
+app.use(morgan("dev"));
+app.use(
+  cors({
+    origin: IS_DEV ? true : FRONTEND_ORIGIN,
+    credentials: false
+  })
+);
+app.use(express.json({ limit: "64kb" }));
+
+app.use(
+  "/api/",
+  rateLimit({
+    windowMs: 60_000,
+    limit: 30,
+    standardHeaders: "draft-7",
+    legacyHeaders: false
+  })
+);
+
+app.get("/api/health", (_req, res) => {
+  res.json({ ok: true });
+});
+
+app.post("/api/leads", async (req, res) => {
+  const parsed = leadSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({
+      ok: false,
+      error: "VALIDATION_ERROR",
+      details: parsed.error.flatten()
+    });
+  }
+
+  const input = parsed.data;
+  if (input.company && input.company.trim().length > 0) {
+    return res.status(200).json({ ok: true }); // silently ignore spam
+  }
+  if (!input.consent) {
+    return res.status(400).json({ ok: false, error: "CONSENT_REQUIRED" });
+  }
+
+  const createdAt = new Date().toISOString();
+  const lead = {
+    id: cryptoRandomId(),
+    createdAt,
+    name: input.name,
+    phone: input.phone,
+    email: input.email,
+    service: input.service,
+    message: input.message,
+    preferredContact: input.preferredContact,
+    source: "website",
+    ip: req.ip,
+    userAgent: req.headers["user-agent"]
+  };
+
+  await appendLead(lead);
+  res.status(201).json({ ok: true, id: lead.id, createdAt });
+});
+
+// (optional) lightweight admin view for quick check in dev
+app.get("/api/leads", async (req, res) => {
+  const token = process.env.ADMIN_TOKEN;
+  if (token && req.headers["x-admin-token"] !== token) {
+    return res.status(401).json({ ok: false });
+  }
+  const limit = clampNumber(Number(req.query.limit ?? 50), 1, 500);
+  const leads = await listLeads(limit);
+  res.json({ ok: true, leads });
+});
+
+// Production: serve frontend build if present (SPA fallback)
+const distDir = path.resolve(process.cwd(), "../frontend/dist");
+if (fs.existsSync(distDir)) {
+  app.use(express.static(distDir));
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(distDir, "index.html"));
+  });
+}
+
+app.listen(PORT, () => {
+  console.log(`[backend] listening on http://localhost:${PORT}`);
+  console.log(`[backend] CORS origin: ${IS_DEV ? "(dev: reflect request origin)" : FRONTEND_ORIGIN}`);
+});
+
+function clampNumber(n: number, min: number, max: number) {
+  if (Number.isNaN(n)) return min;
+  return Math.max(min, Math.min(max, n));
+}
+
+function cryptoRandomId() {
+  // 16 bytes -> 32 hex chars; compact, safe
+  return randomBytes(16).toString("hex");
+}
+
+

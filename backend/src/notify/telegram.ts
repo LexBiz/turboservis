@@ -66,8 +66,9 @@ async function formatLeadMessageHtml(lead: Lead) {
   lines.push(`<b>ID:</b> <code>${escapeHtml(lead.id)}</code>`);
   lines.push("");
   lines.push(`<b>Имя:</b> ${escapeHtml(lead.name)}`);
-  lines.push(`<b>Телефон:</b> <a href="tel:${escapeHtml(phoneLinks.tel)}">${escapeHtml(lead.phone)}</a>`);
-  if (lead.email) lines.push(`<b>Email:</b> <a href="mailto:${escapeHtml(lead.email)}">${escapeHtml(lead.email)}</a>`);
+  // NOTE: Telegram HTML does not reliably support tel:/mailto: links. Keep as plain text.
+  lines.push(`<b>Телефон:</b> <code>${escapeHtml(lead.phone)}</code>`);
+  if (lead.email) lines.push(`<b>Email:</b> <code>${escapeHtml(lead.email)}</code>`);
   if (lead.preferredContact) lines.push(`<b>Связь:</b> ${escapeHtml(lead.preferredContact)}`);
   if (lead.service) lines.push(`<b>Услуга:</b> ${escapeHtml(lead.service)}`);
   if (lead.message) {
@@ -81,7 +82,6 @@ async function formatLeadMessageHtml(lead: Lead) {
     html: lines.join("\n"),
     buttons: [
       [
-        { text: "📞 Позвонить", url: `tel:${phoneLinks.tel}` },
         { text: "WhatsApp", url: `https://wa.me/${phoneLinks.wa}` }
       ]
     ]
@@ -136,7 +136,13 @@ export async function notifyTelegramLead(lead: Lead) {
   const cfg = getTelegramConfig();
   if (!cfg) return;
 
-  const msg = await formatLeadMessageHtml(lead);
+  let msg: { html: string; buttons?: Array<Array<{ text: string; url: string }>> };
+  try {
+    msg = await formatLeadMessageHtml(lead);
+  } catch (e) {
+    console.warn("[telegram] format failed", { error: String(e) });
+    return;
+  }
 
   // Send to all configured groups/chats
   await Promise.all(

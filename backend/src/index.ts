@@ -11,6 +11,7 @@ import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import { leadSchema } from "./validation/leadSchema.js";
 import { appendLead, listLeads } from "./storage/leadsStore.js";
+import { notifyTelegramLead } from "./notify/telegram.js";
 
 const app = express();
 
@@ -89,6 +90,8 @@ app.post("/api/leads", async (req, res) => {
   };
 
   await appendLead(lead);
+  // Fire-and-forget telegram notification (doesn't block the response)
+  void notifyTelegramLead(lead);
   res.status(201).json({ ok: true, id: lead.id, createdAt });
 });
 

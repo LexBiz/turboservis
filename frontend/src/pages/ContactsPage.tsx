@@ -6,6 +6,10 @@ import { heroSources } from "../lib/images";
 
 export default function ContactsPage() {
   const { t, lang } = useI18n();
+  const phone = "777 588 787";
+  const tel = "+777588787";
+  const email = "info.turboservis@gmail.com";
+  const address = "Jiráskova 77, Lužec nad Vltavou";
   return (
     <div>
       {/* Hero */}
@@ -38,10 +42,10 @@ export default function ContactsPage() {
               </div>
               <h3 className="text-lg font-bold text-white mb-2">{t("contacts.phone")}</h3>
               <a 
-                href="tel:+77775887871" 
+                href={`tel:${tel}`} 
                 className="text-primary-500 font-semibold text-xl hover:text-primary-400 transition-colors"
               >
-                777-588-787
+                {phone}
               </a>
               <p className="text-sm text-white/60 mt-2">{t("contacts.phoneHint")}</p>
             </Card>
@@ -52,10 +56,10 @@ export default function ContactsPage() {
               </div>
               <h3 className="text-lg font-bold text-white mb-2">Email</h3>
               <a 
-                href="mailto:info@turboservis.cz" 
+                href={`mailto:${email}`} 
                 className="text-primary-500 hover:text-primary-400 transition-colors"
               >
-                info@turboservis.cz
+                {email}
               </a>
               <p className="text-sm text-white/60 mt-2">{t("contacts.emailHint")}</p>
             </Card>
@@ -66,7 +70,7 @@ export default function ContactsPage() {
               </div>
               <h3 className="text-lg font-bold text-white mb-2">{t("contacts.address")}</h3>
               <p className="text-white/70">
-                {t("contacts.addressText")}
+                {t("contacts.addressText") || address}
               </p>
               <p className="text-sm text-white/60 mt-2">{t("contacts.parking")}</p>
             </Card>
@@ -114,7 +118,7 @@ export default function ContactsPage() {
         </div>
       </section>
 
-      {/* Карта (placeholder) */}
+      {/* Карта */}
       <section className="py-20 bg-dark-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -125,18 +129,13 @@ export default function ContactsPage() {
 
           <div className="max-w-5xl mx-auto">
             <Card className="overflow-hidden bg-dark border border-primary-500/20">
-              {/* Placeholder для карты */}
-              <div className="h-96 bg-gradient-to-br from-primary-900/20 to-dark-50 flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin className="w-16 h-16 text-primary-500 mx-auto mb-4" />
-                  <p className="text-white/70 text-lg">
-                    {t("contacts.addressText")}
-                  </p>
-                  <p className="text-white/50 text-sm mt-2">
-                    {t("contacts.mapHint")}
-                  </p>
-                </div>
-              </div>
+              <iframe
+                title="Map"
+                src={`https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`}
+                className="h-96 w-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
             </Card>
 
             <div className="grid md:grid-cols-2 gap-6 mt-8">
@@ -166,7 +165,7 @@ export default function ContactsPage() {
             <div className="flex flex-wrap justify-center gap-4">
               {[
                 { name: "Telegram", href: "#" },
-                { name: "WhatsApp", href: "https://wa.me/77775887871" },
+                { name: "WhatsApp", href: "https://wa.me/777588787" },
                 { name: "Instagram*", href: "#" },
               ].map((social) => (
                 <a

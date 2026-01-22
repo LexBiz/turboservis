@@ -12,11 +12,21 @@ interface InteractiveCarProps {
 type CarZone = "engine" | "wheels" | "suspension" | "body" | "electronics";
 
 const serviceToZone: Record<string, CarZone> = {
+  // current services list
+  parts: "body",
+  alignment: "suspension",
+  bodywork: "body",
+  dpf: "engine",
+  injectors: "engine",
+  ac: "engine",
+  tires: "wheels",
+  engine: "engine",
+  crash: "body",
+
+  // legacy ids (kept for safety if referenced elsewhere)
   diagnostics: "electronics",
   turbo: "engine",
   egrdpf: "engine",
-  injectors: "engine",
-  engine: "engine",
   suspension: "suspension",
   maintenance: "body",
   warranty: "body",

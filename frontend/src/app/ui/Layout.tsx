@@ -17,7 +17,9 @@ export function Layout() {
   const { t } = useI18n();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const email = useMemo(() => "info@turboservis.cz", []);
+  const email = useMemo(() => "info.turboservis@gmail.com", []);
+  const phone = useMemo(() => "777 588 787", []);
+  const tel = useMemo(() => "+777588787", []);
 
   useEffect(() => {
     // hash navigation support: /contacts#form
@@ -77,11 +79,11 @@ export function Layout() {
               {/* language is always accessible (mobile too) */}
               <LanguageSwitcher />
               <a 
-                href="tel:+77775887871" 
+                href={`tel:${tel}`} 
                 className="hidden lg:flex items-center gap-2 px-4 py-2 text-white font-semibold hover:text-primary-500 transition-colors"
               >
                 <Phone className="w-4 h-4" />
-                <span className="text-lg">777-588-787</span>
+                <span className="text-lg">{phone}</span>
               </a>
 
               {/* Mobile menu button */}
@@ -129,9 +131,9 @@ export function Layout() {
             </div>
 
             <div className="mt-4 grid gap-2 rounded-xl border border-white/10 bg-dark p-4">
-              <a className="flex items-center gap-2 text-white/80 hover:text-white" href="tel:+77775887871">
+              <a className="flex items-center gap-2 text-white/80 hover:text-white" href={`tel:${tel}`}>
                 <Phone className="h-4 w-4 text-primary-500" />
-                777-588-787
+                {phone}
               </a>
               <a className="flex items-center gap-2 text-white/80 hover:text-white" href={`mailto:${email}`}>
                 <Mail className="h-4 w-4 text-primary-500" />
@@ -180,11 +182,11 @@ export function Layout() {
               <h3 className="text-white font-bold mb-4">{t("common.contacts")}</h3>
               <div className="grid gap-3 text-sm">
                 <a 
-                  href="tel:+77775887871" 
+                  href={`tel:${tel}`} 
                   className="flex items-center gap-2 text-white/70 hover:text-primary-500 transition-colors"
                 >
                   <Phone className="w-4 h-4" />
-                  777-588-787
+                  {phone}
                 </a>
                 <a 
                   href={`mailto:${email}`} 

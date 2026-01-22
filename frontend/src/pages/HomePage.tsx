@@ -16,6 +16,8 @@ export default function HomePage() {
   const { t } = useI18n();
   const interactiveRef = useRef<HTMLDivElement | null>(null);
   const [showInteractive, setShowInteractive] = useState(false);
+  const phone = "777 588 787";
+  const tel = "+777588787";
 
   useEffect(() => {
     const el = interactiveRef.current;
@@ -82,10 +84,10 @@ export default function HomePage() {
                   {t("home.bookDiagnostics")}
                 </Button>
               </NavLink>
-              <a href="tel:+77775887871">
+              <a href={`tel:${tel}`}>
                 <Button size="lg" variant="outline" className="text-lg">
                   <Phone className="w-5 h-5 mr-2" />
-                  777-588-787
+                  {phone}
                 </Button>
               </a>
             </div>
@@ -245,7 +247,7 @@ export default function HomePage() {
                 {t("home.leaveRequest")}
               </Button>
             </NavLink>
-            <a href="tel:+77775887871">
+            <a href={`tel:${tel}`}>
               <Button size="lg" variant="secondary" className="text-lg">
                 <Phone className="w-5 h-5 mr-2" />
                 {t("cta.callNow")}

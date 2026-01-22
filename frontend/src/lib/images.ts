@@ -62,6 +62,8 @@ export function serviceImage(id: string, lang: Lang) {
 }
 
 export function serviceSources(id: string, lang: Lang) {
+  // Keep srcset aligned with the actual resolved image (incl. fallbacks),
+  // otherwise browsers may try a non-existent srcset candidate and render nothing.
   if (id === "diagnostics") {
     const base = `${langPrefix(lang)}-service-diagnostics`;
     return {
@@ -71,7 +73,13 @@ export function serviceSources(id: string, lang: Lang) {
       sizes: "(max-width: 768px) 50vw, 33vw"
     };
   }
-  const base = `service-${id}`;
+
+  const fallbackBaseById: Record<string, string> = {
+    warranty: "service-maintenance",
+    dyno: `${langPrefix(lang)}-service-diagnostics`
+  };
+
+  const base = fallbackBaseById[id] ?? `service-${id}`;
   return {
     src: serviceImage(id, lang),
     webpSrcSet: srcset(base, [400, 800], "webp"),

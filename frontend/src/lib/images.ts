@@ -9,6 +9,13 @@ export function optImageUrl(filename: string) {
   return `/images/opt/${encodeURIComponent(filename)}`;
 }
 
+function langPrefix(lang: Lang) {
+  // Our file naming convention in /public/images uses:
+  // - Czech: "cz ..."
+  // - Ukrainian: "ua ..."
+  return lang === "cs" ? "cz" : "ua";
+}
+
 function srcset(base: string, widths: number[], ext: "webp" | "jpg") {
   return widths.map((w) => `${optImageUrl(`${base}-${w}.${ext}`)} ${w}w`).join(", ");
 }
@@ -29,7 +36,7 @@ export function heroImage(page: "services" | "about" | "contacts", lang: Lang) {
 }
 
 export function heroSources(page: "services" | "about" | "contacts", lang: Lang) {
-  const base = `${lang}-hero-${page}`;
+  const base = `${langPrefix(lang)}-hero-${page}`;
   return {
     src: heroImage(page, lang),
     webpSrcSet: srcset(base, [900, 1600], "webp"),
@@ -56,7 +63,7 @@ export function serviceImage(id: string, lang: Lang) {
 
 export function serviceSources(id: string, lang: Lang) {
   if (id === "diagnostics") {
-    const base = `${lang}-service-diagnostics`;
+    const base = `${langPrefix(lang)}-service-diagnostics`;
     return {
       src: serviceImage(id, lang),
       webpSrcSet: srcset(base, [400, 800], "webp"),

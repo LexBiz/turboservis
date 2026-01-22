@@ -59,24 +59,26 @@ async function formatLeadMessageHtml(lead: Lead) {
   const dailyNo = await countLeadsForDay(lead.createdAt, timeZone);
   const date = formatDateRu(lead.createdAt, timeZone);
   const phoneLinks = normalizePhoneForLinks(lead.phone);
+  const includeId = String(process.env.TELEGRAM_INCLUDE_ID ?? "").trim() === "1";
+  const includeIp = String(process.env.TELEGRAM_INCLUDE_IP ?? "").trim() === "1";
 
   const lines: string[] = [];
   lines.push(`<b>🆕 Заявка #${dailyNo} • ${escapeHtml(date.short)}</b>`);
-  lines.push(`<b>Время:</b> ${escapeHtml(date.full)}`);
-  lines.push(`<b>ID:</b> <code>${escapeHtml(lead.id)}</code>`);
+  lines.push(`🕒 <b>Время:</b> ${escapeHtml(date.full)}`);
+  if (includeId) lines.push(`🆔 <b>ID:</b> <code>${escapeHtml(lead.id)}</code>`);
   lines.push("");
-  lines.push(`<b>Имя:</b> ${escapeHtml(lead.name)}`);
+  lines.push(`👤 <b>Имя:</b> ${escapeHtml(lead.name)}`);
   // NOTE: Telegram HTML does not reliably support tel:/mailto: links. Keep as plain text.
-  lines.push(`<b>Телефон:</b> <code>${escapeHtml(lead.phone)}</code>`);
-  if (lead.email) lines.push(`<b>Email:</b> <code>${escapeHtml(lead.email)}</code>`);
-  if (lead.preferredContact) lines.push(`<b>Связь:</b> ${escapeHtml(lead.preferredContact)}`);
-  if (lead.service) lines.push(`<b>Услуга:</b> ${escapeHtml(lead.service)}`);
+  lines.push(`📞 <b>Телефон:</b> <code>${escapeHtml(lead.phone)}</code>`);
+  if (lead.email) lines.push(`✉️ <b>Email:</b> <code>${escapeHtml(lead.email)}</code>`);
+  if (lead.preferredContact) lines.push(`📲 <b>Связь:</b> ${escapeHtml(lead.preferredContact)}`);
+  if (lead.service) lines.push(`🛠️ <b>Услуга:</b> ${escapeHtml(lead.service)}`);
   if (lead.message) {
     lines.push("");
-    lines.push("<b>Комментарий:</b>");
+    lines.push("💬 <b>Комментарий:</b>");
     lines.push(`<pre>${escapeHtml(lead.message)}</pre>`);
   }
-  if (lead.ip) lines.push(`\n<b>IP:</b> <code>${escapeHtml(lead.ip)}</code>`);
+  if (includeIp && lead.ip) lines.push(`\n🌐 <b>IP:</b> <code>${escapeHtml(lead.ip)}</code>`);
 
   return {
     html: lines.join("\n"),

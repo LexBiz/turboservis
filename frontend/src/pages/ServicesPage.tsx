@@ -4,7 +4,7 @@ import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { services } from "../data/services";
 import { useI18n } from "../i18n/useI18n";
-import { heroSources, serviceSources } from "../lib/images";
+import { heroSources, imageUrl, serviceImage } from "../lib/images";
 import { TechLines } from "../components/TechLines";
 
 export default function ServicesPage() {
@@ -51,25 +51,18 @@ export default function ServicesPage() {
                 <div className="p-8">
                   {/* service image (if exists in /public/images) */}
                   <div className="relative mb-6 overflow-hidden rounded-xl border border-white/10 aspect-square bg-dark">
-                    {(() => {
-                      const s = serviceSources(service.id, lang);
-                      return (
-                        <picture className="block h-full w-full">
-                          <source type="image/webp" srcSet={s.webpSrcSet} sizes={s.sizes} />
-                          <source type="image/jpeg" srcSet={s.jpgSrcSet} sizes={s.sizes} />
-                          <img
-                            src={s.src}
-                            alt={t(`svc.${service.id}.t`)}
-                            className="h-full w-full object-cover"
-                            loading="lazy"
-                            decoding="async"
-                            onError={(e) => {
-                              (e.currentTarget.parentElement as HTMLElement | null)?.classList.add("hidden");
-                            }}
-                          />
-                        </picture>
-                      );
-                    })()}
+                    <img
+                      src={imageUrl(`service-${service.id}-800x800.jpg`)}
+                      alt={t(`svc.${service.id}.t`)}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      onError={(e) => {
+                        // Fallback to an existing image so the card never looks empty
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = serviceImage(service.id, lang);
+                      }}
+                    />
                     <div className="absolute inset-0 ring-1 ring-white/5" />
                   </div>
 

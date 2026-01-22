@@ -28,10 +28,11 @@ function escapeHtml(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function formatDateUk(iso: string, timeZone: string) {
+function formatDatePrague(iso: string, timeZone: string) {
   const d = new Date(iso);
   // dd.mm.yyyy, HH:MM
-  const parts = new Intl.DateTimeFormat("uk-UA", {
+  // Use a stable numeric formatter (locale doesn't matter because we build digits ourselves)
+  const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone,
     year: "numeric",
     month: "2-digit",
@@ -68,37 +69,70 @@ function preferredContactUk(v: Lead["preferredContact"]) {
   }
 }
 
-async function formatLeadMessageHtml(lead: Lead) {
+type LeadMsg = { html: string; text: string; buttons?: Array<Array<{ text: string; url: string }>> };
+
+async function formatLeadMessage(lead: Lead): Promise<LeadMsg> {
   // Prague timezone so daily counter resets at 00:00 Prague time
   const timeZone = process.env.LEADS_TIMEZONE ?? "Europe/Prague";
   const dailyNo = await countLeadsForDay(lead.createdAt, timeZone);
-  const date = formatDateUk(lead.createdAt, timeZone);
+  const date = formatDatePrague(lead.createdAt, timeZone);
   const phoneLinks = normalizePhoneForLinks(lead.phone);
   const includeId = String(process.env.TELEGRAM_INCLUDE_ID ?? "").trim() === "1";
   const includeIp = String(process.env.TELEGRAM_INCLUDE_IP ?? "").trim() === "1";
 
-  const lines: string[] = [];
-  lines.push(`<b>🆕 Заявка №${dailyNo} • ${escapeHtml(date.short)}</b>`);
-  lines.push(`🕒 <b>Час:</b> ${escapeHtml(date.full)}`);
-  if (includeId) lines.push(`🆔 <b>ID:</b> <code>${escapeHtml(lead.id)}</code>`);
-  lines.push("");
-  lines.push(`👤 <b>Ім’я:</b> ${escapeHtml(lead.name)}`);
+  const htmlLines: string[] = [];
+  const textLines: string[] = [];
+
+  htmlLines.push(`<b>🆕 Заявка №${dailyNo} • ${escapeHtml(date.short)}</b>`);
+  textLines.push(`🆕 Заявка №${dailyNo} • ${date.short}`);
+
+  htmlLines.push(`🕒 <b>Час:</b> ${escapeHtml(date.full)}`);
+  textLines.push(`🕒 Час: ${date.full}`);
+
+  if (includeId) {
+    htmlLines.push(`🆔 <b>ID:</b> <code>${escapeHtml(lead.id)}</code>`);
+    textLines.push(`🆔 ID: ${lead.id}`);
+  }
+
+  htmlLines.push("");
+  textLines.push("");
+
+  htmlLines.push(`👤 <b>Ім’я:</b> ${escapeHtml(lead.name)}`);
+  textLines.push(`👤 Ім’я: ${lead.name}`);
   // NOTE: Telegram HTML does not reliably support tel:/mailto: links. Keep as plain text.
-  lines.push(`📞 <b>Телефон:</b> <code>${escapeHtml(lead.phone)}</code>`);
-  if (lead.email) lines.push(`✉️ <b>Email:</b> <code>${escapeHtml(lead.email)}</code>`);
+  htmlLines.push(`📞 <b>Телефон:</b> <code>${escapeHtml(lead.phone)}</code>`);
+  textLines.push(`📞 Телефон: ${lead.phone}`);
+
+  if (lead.email) {
+    htmlLines.push(`✉️ <b>Email:</b> <code>${escapeHtml(lead.email)}</code>`);
+    textLines.push(`✉️ Email: ${lead.email}`);
+  }
   if (lead.preferredContact) {
-    lines.push(`📲 <b>Зв’язок:</b> ${escapeHtml(preferredContactUk(lead.preferredContact) ?? lead.preferredContact)}`);
+    const pc = preferredContactUk(lead.preferredContact) ?? lead.preferredContact;
+    htmlLines.push(`📲 <b>Зв’язок:</b> ${escapeHtml(pc)}`);
+    textLines.push(`📲 Зв’язок: ${pc}`);
   }
-  if (lead.service) lines.push(`🛠️ <b>Послуга:</b> ${escapeHtml(lead.service)}`);
+  if (lead.service) {
+    htmlLines.push(`🛠️ <b>Послуга:</b> ${escapeHtml(lead.service)}`);
+    textLines.push(`🛠️ Послуга: ${lead.service}`);
+  }
   if (lead.message) {
-    lines.push("");
-    lines.push("💬 <b>Коментар:</b>");
-    lines.push(`<pre>${escapeHtml(lead.message)}</pre>`);
+    htmlLines.push("");
+    htmlLines.push("💬 <b>Коментар:</b>");
+    htmlLines.push(`<pre>${escapeHtml(lead.message)}</pre>`);
+
+    textLines.push("");
+    textLines.push("💬 Коментар:");
+    textLines.push(lead.message);
   }
-  if (includeIp && lead.ip) lines.push(`\n🌐 <b>IP:</b> <code>${escapeHtml(lead.ip)}</code>`);
+  if (includeIp && lead.ip) {
+    htmlLines.push(`\n🌐 <b>IP:</b> <code>${escapeHtml(lead.ip)}</code>`);
+    textLines.push(`\n🌐 IP: ${lead.ip}`);
+  }
 
   return {
-    html: lines.join("\n"),
+    html: htmlLines.join("\n"),
+    text: textLines.join("\n"),
     buttons: [
       [
         { text: "WhatsApp", url: `https://wa.me/${phoneLinks.wa}` }
@@ -110,13 +144,17 @@ async function formatLeadMessageHtml(lead: Lead) {
 async function sendTelegramMessage(
   token: string,
   chatId: string,
-  opts: { html: string; buttons?: Array<Array<{ text: string; url: string }>> }
+  opts: {
+    text: string;
+    parseMode?: "HTML";
+    buttons?: Array<Array<{ text: string; url: string }>>;
+  }
 ) {
   const url = new URL(`https://api.telegram.org/bot${token}/sendMessage`);
   const payload = JSON.stringify({
     chat_id: chatId,
-    text: opts.html,
-    parse_mode: "HTML",
+    text: opts.text,
+    parse_mode: opts.parseMode,
     disable_web_page_preview: true,
     reply_markup: opts.buttons ? { inline_keyboard: opts.buttons } : undefined
   });
@@ -155,9 +193,9 @@ export async function notifyTelegramLead(lead: Lead) {
   const cfg = getTelegramConfig();
   if (!cfg) return;
 
-  let msg: { html: string; buttons?: Array<Array<{ text: string; url: string }>> };
+  let msg: LeadMsg;
   try {
-    msg = await formatLeadMessageHtml(lead);
+    msg = await formatLeadMessage(lead);
   } catch (e) {
     console.warn("[telegram] format failed", { error: String(e) });
     return;
@@ -167,9 +205,15 @@ export async function notifyTelegramLead(lead: Lead) {
   await Promise.all(
     cfg.chatIds.map(async (chatId) => {
       try {
-        await sendTelegramMessage(cfg.token, chatId, msg);
+        // Try pretty HTML first
+        await sendTelegramMessage(cfg.token, chatId, { text: msg.html, parseMode: "HTML", buttons: msg.buttons });
       } catch (e) {
-        console.warn("[telegram] send failed", { chatId, error: String(e) });
+        // Fallback: plain text (no parse_mode). This avoids "can't parse entities" issues.
+        try {
+          await sendTelegramMessage(cfg.token, chatId, { text: msg.text });
+        } catch (e2) {
+          console.warn("[telegram] send failed", { chatId, error: String(e2) });
+        }
       }
     })
   );

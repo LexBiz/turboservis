@@ -28,10 +28,10 @@ function escapeHtml(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function formatDateRu(iso: string, timeZone: string) {
+function formatDateUk(iso: string, timeZone: string) {
   const d = new Date(iso);
   // dd.mm.yyyy, HH:MM
-  const parts = new Intl.DateTimeFormat("ru-RU", {
+  const parts = new Intl.DateTimeFormat("uk-UA", {
     timeZone,
     year: "numeric",
     month: "2-digit",
@@ -54,28 +54,45 @@ function normalizePhoneForLinks(raw: string) {
   return { tel: digits.startsWith("+") ? digits : `+${wa}`, wa };
 }
 
+function preferredContactUk(v: Lead["preferredContact"]) {
+  if (!v) return null;
+  switch (v) {
+    case "phone":
+      return "Дзвінок";
+    case "whatsapp":
+      return "WhatsApp";
+    case "telegram":
+      return "Telegram";
+    default:
+      return String(v);
+  }
+}
+
 async function formatLeadMessageHtml(lead: Lead) {
+  // Prague timezone so daily counter resets at 00:00 Prague time
   const timeZone = process.env.LEADS_TIMEZONE ?? "Europe/Prague";
   const dailyNo = await countLeadsForDay(lead.createdAt, timeZone);
-  const date = formatDateRu(lead.createdAt, timeZone);
+  const date = formatDateUk(lead.createdAt, timeZone);
   const phoneLinks = normalizePhoneForLinks(lead.phone);
   const includeId = String(process.env.TELEGRAM_INCLUDE_ID ?? "").trim() === "1";
   const includeIp = String(process.env.TELEGRAM_INCLUDE_IP ?? "").trim() === "1";
 
   const lines: string[] = [];
-  lines.push(`<b>🆕 Заявка #${dailyNo} • ${escapeHtml(date.short)}</b>`);
-  lines.push(`🕒 <b>Время:</b> ${escapeHtml(date.full)}`);
+  lines.push(`<b>🆕 Заявка №${dailyNo} • ${escapeHtml(date.short)}</b>`);
+  lines.push(`🕒 <b>Час:</b> ${escapeHtml(date.full)}`);
   if (includeId) lines.push(`🆔 <b>ID:</b> <code>${escapeHtml(lead.id)}</code>`);
   lines.push("");
-  lines.push(`👤 <b>Имя:</b> ${escapeHtml(lead.name)}`);
+  lines.push(`👤 <b>Ім’я:</b> ${escapeHtml(lead.name)}`);
   // NOTE: Telegram HTML does not reliably support tel:/mailto: links. Keep as plain text.
   lines.push(`📞 <b>Телефон:</b> <code>${escapeHtml(lead.phone)}</code>`);
   if (lead.email) lines.push(`✉️ <b>Email:</b> <code>${escapeHtml(lead.email)}</code>`);
-  if (lead.preferredContact) lines.push(`📲 <b>Связь:</b> ${escapeHtml(lead.preferredContact)}`);
-  if (lead.service) lines.push(`🛠️ <b>Услуга:</b> ${escapeHtml(lead.service)}`);
+  if (lead.preferredContact) {
+    lines.push(`📲 <b>Зв’язок:</b> ${escapeHtml(preferredContactUk(lead.preferredContact) ?? lead.preferredContact)}`);
+  }
+  if (lead.service) lines.push(`🛠️ <b>Послуга:</b> ${escapeHtml(lead.service)}`);
   if (lead.message) {
     lines.push("");
-    lines.push("💬 <b>Комментарий:</b>");
+    lines.push("💬 <b>Коментар:</b>");
     lines.push(`<pre>${escapeHtml(lead.message)}</pre>`);
   }
   if (includeIp && lead.ip) lines.push(`\n🌐 <b>IP:</b> <code>${escapeHtml(lead.ip)}</code>`);

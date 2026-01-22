@@ -7,6 +7,27 @@ type TelegramConfig = {
   chatIds: string[];
 };
 
+type TelegramErrorPayload = {
+  ok?: boolean;
+  error_code?: number;
+  description?: string;
+  parameters?: {
+    migrate_to_chat_id?: number;
+  };
+};
+
+class TelegramApiError extends Error {
+  statusCode: number | undefined;
+  payload: TelegramErrorPayload | null;
+
+  constructor(message: string, statusCode?: number, payload?: TelegramErrorPayload | null) {
+    super(message);
+    this.name = "TelegramApiError";
+    this.statusCode = statusCode;
+    this.payload = payload ?? null;
+  }
+}
+
 function getTelegramConfig(): TelegramConfig | null {
   const token = (process.env.TELEGRAM_BOT_TOKEN ?? "").trim();
   if (!token) return null;
@@ -110,13 +131,18 @@ async function formatLeadMessage(lead: Lead): Promise<LeadMsg> {
     textLines.push(`\n🌐 IP: ${lead.ip}`);
   }
 
+  const buttons: LeadMsg["buttons"] = (() => {
+    // Buttons must match user's preference from the form.
+    // Telegram inline keyboard does NOT support tel: reliably, so we only use https URLs.
+    if (lead.preferredContact === "whatsapp" && phoneLinks.wa.length >= 6) {
+      return [[{ text: "WhatsApp", url: `https://wa.me/${phoneLinks.wa}` }]];
+    }
+    return undefined;
+  })();
+
   return {
     text: textLines.join("\n"),
-    buttons: [
-      [
-        { text: "WhatsApp", url: `https://wa.me/${phoneLinks.wa}` }
-      ]
-    ]
+    buttons
   };
 }
 
@@ -153,7 +179,13 @@ async function sendTelegramMessage(
           const body = Buffer.concat(chunks).toString("utf8");
           const ok = res.statusCode && res.statusCode >= 200 && res.statusCode < 300;
           if (!ok) {
-            reject(new Error(`Telegram sendMessage failed (${res.statusCode}): ${body}`));
+            let parsed: TelegramErrorPayload | null = null;
+            try {
+              parsed = JSON.parse(body) as TelegramErrorPayload;
+            } catch {
+              parsed = null;
+            }
+            reject(new TelegramApiError(`Telegram sendMessage failed (${res.statusCode}): ${body}`, res.statusCode, parsed));
             return;
           }
           resolve();
@@ -184,6 +216,25 @@ export async function notifyTelegramLead(lead: Lead) {
       try {
         await sendTelegramMessage(cfg.token, chatId, { text: msg.text, buttons: msg.buttons });
       } catch (e) {
+        // If group was upgraded to supergroup, Telegram returns migrate_to_chat_id.
+        if (e instanceof TelegramApiError) {
+          const migrateTo = e.payload?.parameters?.migrate_to_chat_id;
+          if (migrateTo) {
+            const newChatId = String(migrateTo);
+            console.warn("[telegram] chat migrated (update TELEGRAM_CHAT_IDS)", {
+              oldChatId: chatId,
+              newChatId
+            });
+            try {
+              await sendTelegramMessage(cfg.token, newChatId, { text: msg.text, buttons: msg.buttons });
+              return;
+            } catch (e2) {
+              console.warn("[telegram] send failed", { chatId: newChatId, error: String(e2) });
+              return;
+            }
+          }
+        }
+
         console.warn("[telegram] send failed", { chatId, error: String(e) });
       }
     })

@@ -22,6 +22,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const dataDir = path.resolve(__dirname, "../../data");
 const leadsFile = path.join(dataDir, "leads.json");
+const leadsNdjsonFile = path.join(dataDir, "leads.ndjson");
 
 async function ensureDataFile() {
   await fs.mkdir(dataDir, { recursive: true });
@@ -38,6 +39,13 @@ export async function appendLead(lead: Lead) {
   const parsed = safeParseJson<{ leads: Lead[] }>(raw) ?? { leads: [] };
   parsed.leads.unshift(lead);
   await fs.writeFile(leadsFile, JSON.stringify(parsed, null, 2), "utf8");
+
+  // Extra safety: append-only backup (easy to recover even if JSON becomes corrupted)
+  try {
+    await fs.appendFile(leadsNdjsonFile, `${JSON.stringify(lead)}\n`, "utf8");
+  } catch {
+    // ignore backup errors
+  }
 }
 
 export async function listLeads(limit = 100): Promise<Lead[]> {

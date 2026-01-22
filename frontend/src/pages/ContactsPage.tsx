@@ -163,19 +163,20 @@ export default function ContactsPage() {
               {t("contacts.socialLead")}
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              {[
-                { name: "Telegram", href: "#" },
-                { name: "WhatsApp", href: "https://wa.me/777588787" },
-                { name: "Instagram*", href: "#" },
-              ].map((social) => (
-                <a
-                  key={social.name}
-                  href={social.href}
-                  className="px-6 py-3 bg-dark-50 border border-primary-500/20 hover:border-primary-500/50 rounded-lg text-white font-semibold transition-all hover:bg-primary-500/10"
-                >
-                  {social.name}
-                </a>
-              ))}
+              <a
+                href={`tel:${tel}`}
+                className="px-6 py-3 bg-dark-50 border border-primary-500/20 hover:border-primary-500/50 rounded-lg text-white font-semibold transition-all hover:bg-primary-500/10"
+              >
+                {phone}
+              </a>
+              <a
+                href="https://www.instagram.com/turboservis1/"
+                target="_blank"
+                rel="noreferrer"
+                className="px-6 py-3 bg-dark-50 border border-primary-500/20 hover:border-primary-500/50 rounded-lg text-white font-semibold transition-all hover:bg-primary-500/10"
+              >
+                Instagram
+              </a>
             </div>
             <p className="text-xs text-white/40 mt-4">
               {t("contacts.igNote")}

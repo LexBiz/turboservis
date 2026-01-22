@@ -24,10 +24,6 @@ function getTelegramConfig(): TelegramConfig | null {
   return { token, chatIds };
 }
 
-function escapeHtml(s: string) {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
 function formatDatePrague(iso: string, timeZone: string) {
   const d = new Date(iso);
   // dd.mm.yyyy, HH:MM
@@ -69,7 +65,7 @@ function preferredContactUk(v: Lead["preferredContact"]) {
   }
 }
 
-type LeadMsg = { html: string; text: string; buttons?: Array<Array<{ text: string; url: string }>> };
+type LeadMsg = { text: string; buttons?: Array<Array<{ text: string; url: string }>> };
 
 async function formatLeadMessage(lead: Lead): Promise<LeadMsg> {
   // Prague timezone so daily counter resets at 00:00 Prague time
@@ -80,58 +76,41 @@ async function formatLeadMessage(lead: Lead): Promise<LeadMsg> {
   const includeId = String(process.env.TELEGRAM_INCLUDE_ID ?? "").trim() === "1";
   const includeIp = String(process.env.TELEGRAM_INCLUDE_IP ?? "").trim() === "1";
 
-  const htmlLines: string[] = [];
   const textLines: string[] = [];
 
-  htmlLines.push(`<b>🆕 Заявка №${dailyNo} • ${escapeHtml(date.short)}</b>`);
   textLines.push(`🆕 Заявка №${dailyNo} • ${date.short}`);
 
-  htmlLines.push(`🕒 <b>Час:</b> ${escapeHtml(date.full)}`);
   textLines.push(`🕒 Час: ${date.full}`);
 
   if (includeId) {
-    htmlLines.push(`🆔 <b>ID:</b> <code>${escapeHtml(lead.id)}</code>`);
     textLines.push(`🆔 ID: ${lead.id}`);
   }
 
-  htmlLines.push("");
   textLines.push("");
 
-  htmlLines.push(`👤 <b>Ім’я:</b> ${escapeHtml(lead.name)}`);
   textLines.push(`👤 Ім’я: ${lead.name}`);
-  // NOTE: Telegram HTML does not reliably support tel:/mailto: links. Keep as plain text.
-  htmlLines.push(`📞 <b>Телефон:</b> <code>${escapeHtml(lead.phone)}</code>`);
   textLines.push(`📞 Телефон: ${lead.phone}`);
 
   if (lead.email) {
-    htmlLines.push(`✉️ <b>Email:</b> <code>${escapeHtml(lead.email)}</code>`);
     textLines.push(`✉️ Email: ${lead.email}`);
   }
   if (lead.preferredContact) {
     const pc = preferredContactUk(lead.preferredContact) ?? lead.preferredContact;
-    htmlLines.push(`📲 <b>Зв’язок:</b> ${escapeHtml(pc)}`);
     textLines.push(`📲 Зв’язок: ${pc}`);
   }
   if (lead.service) {
-    htmlLines.push(`🛠️ <b>Послуга:</b> ${escapeHtml(lead.service)}`);
     textLines.push(`🛠️ Послуга: ${lead.service}`);
   }
   if (lead.message) {
-    htmlLines.push("");
-    htmlLines.push("💬 <b>Коментар:</b>");
-    htmlLines.push(`<pre>${escapeHtml(lead.message)}</pre>`);
-
     textLines.push("");
     textLines.push("💬 Коментар:");
     textLines.push(lead.message);
   }
   if (includeIp && lead.ip) {
-    htmlLines.push(`\n🌐 <b>IP:</b> <code>${escapeHtml(lead.ip)}</code>`);
     textLines.push(`\n🌐 IP: ${lead.ip}`);
   }
 
   return {
-    html: htmlLines.join("\n"),
     text: textLines.join("\n"),
     buttons: [
       [
@@ -146,7 +125,6 @@ async function sendTelegramMessage(
   chatId: string,
   opts: {
     text: string;
-    parseMode?: "HTML";
     buttons?: Array<Array<{ text: string; url: string }>>;
   }
 ) {
@@ -154,7 +132,6 @@ async function sendTelegramMessage(
   const payload = JSON.stringify({
     chat_id: chatId,
     text: opts.text,
-    parse_mode: opts.parseMode,
     disable_web_page_preview: true,
     reply_markup: opts.buttons ? { inline_keyboard: opts.buttons } : undefined
   });
@@ -205,15 +182,9 @@ export async function notifyTelegramLead(lead: Lead) {
   await Promise.all(
     cfg.chatIds.map(async (chatId) => {
       try {
-        // Try pretty HTML first
-        await sendTelegramMessage(cfg.token, chatId, { text: msg.html, parseMode: "HTML", buttons: msg.buttons });
+        await sendTelegramMessage(cfg.token, chatId, { text: msg.text, buttons: msg.buttons });
       } catch (e) {
-        // Fallback: plain text (no parse_mode). This avoids "can't parse entities" issues.
-        try {
-          await sendTelegramMessage(cfg.token, chatId, { text: msg.text });
-        } catch (e2) {
-          console.warn("[telegram] send failed", { chatId, error: String(e2) });
-        }
+        console.warn("[telegram] send failed", { chatId, error: String(e) });
       }
     })
   );

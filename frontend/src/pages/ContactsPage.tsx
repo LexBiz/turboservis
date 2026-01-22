@@ -14,7 +14,7 @@ export default function ContactsPage() {
           {(() => {
             const hero = heroSources("contacts", lang);
             return (
-              <picture>
+              <picture className="block h-full w-full">
                 <source type="image/webp" srcSet={hero.webpSrcSet} sizes={hero.sizes} />
                 <source type="image/jpeg" srcSet={hero.jpgSrcSet} sizes={hero.sizes} />
                 <img src={hero.src} alt="Contacts" className="h-full w-full object-cover object-center" decoding="async" />

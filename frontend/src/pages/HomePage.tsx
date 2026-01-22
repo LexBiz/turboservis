@@ -42,7 +42,7 @@ export default function HomePage() {
           {(() => {
             const hero = heroMainSources();
             return (
-              <picture>
+              <picture className="block h-full w-full">
                 <source type="image/webp" srcSet={hero.webpSrcSet} sizes={hero.sizes} />
                 <source type="image/jpeg" srcSet={hero.jpgSrcSet} sizes={hero.sizes} />
                 <img

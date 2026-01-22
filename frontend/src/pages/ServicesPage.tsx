@@ -17,7 +17,7 @@ export default function ServicesPage() {
           {(() => {
             const hero = heroSources("services", lang);
             return (
-              <picture>
+              <picture className="block h-full w-full">
                 <source type="image/webp" srcSet={hero.webpSrcSet} sizes={hero.sizes} />
                 <source type="image/jpeg" srcSet={hero.jpgSrcSet} sizes={hero.sizes} />
                 <img src={hero.src} alt="Services" className="h-full w-full object-cover object-center" decoding="async" />
@@ -54,7 +54,7 @@ export default function ServicesPage() {
                     {(() => {
                       const s = serviceSources(service.id, lang);
                       return (
-                        <picture>
+                        <picture className="block h-full w-full">
                           <source type="image/webp" srcSet={s.webpSrcSet} sizes={s.sizes} />
                           <source type="image/jpeg" srcSet={s.jpgSrcSet} sizes={s.sizes} />
                           <img

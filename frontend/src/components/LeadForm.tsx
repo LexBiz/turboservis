@@ -8,6 +8,7 @@ type FormState = {
   name: string;
   phone: string;
   email: string;
+  telegramUsername: string;
   service: string;
   message: string;
   preferredContact: "phone" | "whatsapp" | "telegram";
@@ -19,6 +20,7 @@ const initial: FormState = {
   name: "",
   phone: "",
   email: "",
+  telegramUsername: "",
   service: "",
   message: "",
   preferredContact: "phone",
@@ -44,6 +46,11 @@ export function LeadForm() {
           .trim()
           .optional()
           .refine((v) => !v || /\S+@\S+\.\S+/.test(v), t("form.errEmail")),
+        telegramUsername: z
+          .string()
+          .trim()
+          .optional()
+          .refine((v) => !v || /^@?[A-Za-z0-9_]{5,64}$/.test(v), t("form.errTelegram")),
         service: z.string().trim().optional(),
         message: z.string().trim().max(1000).optional(),
         preferredContact: z.enum(["phone", "whatsapp", "telegram"]).optional(),
@@ -58,6 +65,10 @@ export function LeadForm() {
       name: state.name,
       phone: state.phone,
       email: state.email || undefined,
+      telegramUsername:
+        state.telegramUsername.trim().length > 0
+          ? state.telegramUsername.trim().replace(/^@/, "")
+          : undefined,
       service: state.service || undefined,
       message: state.message || undefined,
       preferredContact: state.preferredContact,
@@ -191,6 +202,24 @@ export function LeadForm() {
           </select>
         </div>
 
+        {state.preferredContact === "telegram" ? (
+          <div className="grid gap-2">
+            <label className="label" htmlFor="telegramUsername">
+              {t("form.telegram")}
+            </label>
+            <input
+              id="telegramUsername"
+              className="input"
+              value={state.telegramUsername}
+              onChange={(e) => setState((s) => ({ ...s, telegramUsername: e.target.value }))}
+              placeholder={t("form.telegramPh")}
+              autoComplete="off"
+            />
+            {fieldErrors.telegramUsername && (
+              <div className="text-xs text-red-300">{fieldErrors.telegramUsername}</div>
+            )}
+          </div>
+        ) : (
         <div className="grid gap-2">
           <label className="label"> </label>
           <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
@@ -206,6 +235,7 @@ export function LeadForm() {
             </span>
           </label>
         </div>
+        )}
       </div>
 
       {/* honeypot */}

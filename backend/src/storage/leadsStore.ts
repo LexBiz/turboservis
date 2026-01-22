@@ -8,6 +8,7 @@ export type Lead = {
   name: string;
   phone: string;
   email?: string;
+  telegramUsername?: string;
   service?: string;
   message?: string;
   preferredContact?: "phone" | "whatsapp" | "telegram";

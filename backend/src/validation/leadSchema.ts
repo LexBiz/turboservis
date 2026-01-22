@@ -7,6 +7,13 @@ export const leadSchema = z.object({
   service: z.string().trim().max(80).optional().or(z.literal("")).transform((v) => (v ? v : undefined)),
   message: z.string().trim().max(1000).optional().or(z.literal("")).transform((v) => (v ? v : undefined)),
   preferredContact: z.enum(["phone", "whatsapp", "telegram"]).optional(),
+  telegramUsername: z
+    .string()
+    .trim()
+    .max(64)
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => (v ? v : undefined)),
   consent: z.boolean(),
   // simple anti-spam honeypot (must stay empty)
   company: z.string().optional()

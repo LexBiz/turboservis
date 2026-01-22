@@ -81,6 +81,7 @@ app.post("/api/leads", async (req, res) => {
     name: input.name,
     phone: input.phone,
     email: input.email,
+    telegramUsername: input.telegramUsername,
     service: input.service,
     message: input.message,
     preferredContact: input.preferredContact,

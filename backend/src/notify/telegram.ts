@@ -72,6 +72,13 @@ function normalizePhoneForLinks(raw: string) {
   return { tel: digits.startsWith("+") ? digits : `+${wa}`, wa };
 }
 
+function normalizeTelegramUsername(raw?: string) {
+  const v = (raw ?? "").trim().replace(/^@/, "");
+  if (!v) return null;
+  if (!/^[A-Za-z0-9_]{5,64}$/.test(v)) return null;
+  return v;
+}
+
 function preferredContactUk(v: Lead["preferredContact"]) {
   if (!v) return null;
   switch (v) {
@@ -137,6 +144,10 @@ async function formatLeadMessage(lead: Lead): Promise<LeadMsg> {
     if (lead.preferredContact === "whatsapp" && phoneLinks.wa.length >= 6) {
       return [[{ text: "WhatsApp", url: `https://wa.me/${phoneLinks.wa}` }]];
     }
+    if (lead.preferredContact === "telegram") {
+      const u = normalizeTelegramUsername(lead.telegramUsername);
+      if (u) return [[{ text: "Telegram", url: `https://t.me/${u}` }]];
+    }
     return undefined;
   })();
 
@@ -198,6 +209,50 @@ async function sendTelegramMessage(
   });
 }
 
+async function sendTelegramContact(token: string, chatId: string, phoneNumber: string, firstName: string) {
+  const url = new URL(`https://api.telegram.org/bot${token}/sendContact`);
+  const payload = JSON.stringify({
+    chat_id: chatId,
+    phone_number: phoneNumber,
+    first_name: firstName || "Lead"
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    const req = https.request(
+      url,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "content-length": Buffer.byteLength(payload)
+        }
+      },
+      (res) => {
+        const chunks: Buffer[] = [];
+        res.on("data", (c) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)));
+        res.on("end", () => {
+          const body = Buffer.concat(chunks).toString("utf8");
+          const ok = res.statusCode && res.statusCode >= 200 && res.statusCode < 300;
+          if (!ok) {
+            let parsed: TelegramErrorPayload | null = null;
+            try {
+              parsed = JSON.parse(body) as TelegramErrorPayload;
+            } catch {
+              parsed = null;
+            }
+            reject(new TelegramApiError(`Telegram sendContact failed (${res.statusCode}): ${body}`, res.statusCode, parsed));
+            return;
+          }
+          resolve();
+        });
+      }
+    );
+    req.on("error", reject);
+    req.write(payload);
+    req.end();
+  });
+}
+
 export async function notifyTelegramLead(lead: Lead) {
   const cfg = getTelegramConfig();
   if (!cfg) return;
@@ -215,6 +270,11 @@ export async function notifyTelegramLead(lead: Lead) {
     cfg.chatIds.map(async (chatId) => {
       try {
         await sendTelegramMessage(cfg.token, chatId, { text: msg.text, buttons: msg.buttons });
+        // For "phone" preference, also send contact card so Telegram shows a built-in Call button.
+        if (lead.preferredContact === "phone") {
+          const pn = normalizePhoneForLinks(lead.phone).tel;
+          await sendTelegramContact(cfg.token, chatId, pn, lead.name);
+        }
       } catch (e) {
         // If group was upgraded to supergroup, Telegram returns migrate_to_chat_id.
         if (e instanceof TelegramApiError) {
@@ -227,6 +287,10 @@ export async function notifyTelegramLead(lead: Lead) {
             });
             try {
               await sendTelegramMessage(cfg.token, newChatId, { text: msg.text, buttons: msg.buttons });
+              if (lead.preferredContact === "phone") {
+                const pn = normalizePhoneForLinks(lead.phone).tel;
+                await sendTelegramContact(cfg.token, newChatId, pn, lead.name);
+              }
               return;
             } catch (e2) {
               console.warn("[telegram] send failed", { chatId: newChatId, error: String(e2) });

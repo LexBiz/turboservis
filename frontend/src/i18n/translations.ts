@@ -254,6 +254,9 @@ export const dict: Record<Lang, Dict> = {
     "form.errName": "Zadejte jméno",
     "form.errPhone": "Zadejte telefon",
     "form.errEmail": "Neplatný email",
+    "form.telegram": "Telegram (@uživatelské jméno)",
+    "form.telegramPh": "@username",
+    "form.errTelegram": "Zadejte Telegram username (např. @username)",
     "form.errConsent": "Je potřeba souhlas se zpracováním údajů",
 
     // 404
@@ -576,6 +579,9 @@ export const dict: Record<Lang, Dict> = {
     "form.errName": "Вкажіть ім’я",
     "form.errPhone": "Вкажіть телефон",
     "form.errEmail": "Некоректний email",
+    "form.telegram": "Telegram (@юзернейм)",
+    "form.telegramPh": "@username",
+    "form.errTelegram": "Вкажіть Telegram username (наприклад @username)",
     "form.errConsent": "Потрібна згода на обробку даних",
 
     // 404

@@ -2,6 +2,7 @@ import "dotenv/config";
 import path from "node:path";
 import fs from "node:fs";
 import { randomBytes } from "node:crypto";
+import { fileURLToPath } from "node:url";
 import express from "express";
 import compression from "compression";
 import cors from "cors";
@@ -103,7 +104,11 @@ app.get("/api/leads", async (req, res) => {
 });
 
 // Production: serve frontend build if present (SPA fallback)
-const distDir = path.resolve(process.cwd(), "../frontend/dist");
+// IMPORTANT: don't rely on process.cwd() (PM2 can start the process from different directories).
+// Resolve paths relative to this file location (works in both src/ via tsx and dist/ via node).
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const distDir = path.resolve(__dirname, "../../frontend/dist");
 if (fs.existsSync(distDir)) {
   app.use(
     express.static(distDir, {

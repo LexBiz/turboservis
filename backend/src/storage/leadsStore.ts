@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 export type Lead = {
   id: string;
@@ -15,7 +16,11 @@ export type Lead = {
   userAgent?: string;
 };
 
-const dataDir = path.resolve(process.cwd(), "data");
+// Avoid relying on process.cwd() (PM2 may start the process from different directories).
+// Keep data under backend/data regardless of working directory.
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const dataDir = path.resolve(__dirname, "../../data");
 const leadsFile = path.join(dataDir, "leads.json");
 
 async function ensureDataFile() {
@@ -49,5 +54,7 @@ function safeParseJson<T>(raw: string): T | null {
     return null;
   }
 }
+
+
 
 

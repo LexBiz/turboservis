@@ -138,6 +138,11 @@ if (fs.existsSync(distDir)) {
       }
     })
   );
+  // IMPORTANT: don't serve SPA fallback (index.html) for missing static files.
+  // Otherwise the browser may receive HTML for JS/images, causing MIME/type errors and broken images.
+  app.get(/^\/(assets|images)\//, (_req, res) => {
+    res.status(404).end();
+  });
   app.get("*", (_req, res) => {
     res.sendFile(path.join(distDir, "index.html"));
   });

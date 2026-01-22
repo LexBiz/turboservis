@@ -47,6 +47,33 @@ export async function listLeads(limit = 100): Promise<Lead[]> {
   return parsed.leads.slice(0, limit);
 }
 
+function dateKey(iso: string, timeZone: string) {
+  const d = new Date(iso);
+  // Use YYYY-MM-DD in the given timezone
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(d);
+  const y = parts.find((p) => p.type === "year")?.value ?? "0000";
+  const m = parts.find((p) => p.type === "month")?.value ?? "00";
+  const day = parts.find((p) => p.type === "day")?.value ?? "00";
+  return `${y}-${m}-${day}`;
+}
+
+export async function countLeadsForDay(iso: string, timeZone = "Europe/Prague"): Promise<number> {
+  await ensureDataFile();
+  const raw = await fs.readFile(leadsFile, "utf8");
+  const parsed = safeParseJson<{ leads: Lead[] }>(raw) ?? { leads: [] };
+  const key = dateKey(iso, timeZone);
+  let count = 0;
+  for (const l of parsed.leads) {
+    if (dateKey(l.createdAt, timeZone) === key) count++;
+  }
+  return count;
+}
+
 function safeParseJson<T>(raw: string): T | null {
   try {
     return JSON.parse(raw) as T;

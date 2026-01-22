@@ -1,4 +1,4 @@
-import type { Lead } from "../storage/leadsStore.js";
+import { countLeadsForDay, type Lead } from "../storage/leadsStore.js";
 import https from "node:https";
 import { URL } from "node:url";
 
@@ -24,32 +24,82 @@ function getTelegramConfig(): TelegramConfig | null {
   return { token, chatIds };
 }
 
-function formatLeadMessage(lead: Lead) {
-  const lines: string[] = [];
-  lines.push("🆕 Новая заявка с сайта TURBOSERVIS");
-  lines.push(`ID: ${lead.id}`);
-  lines.push(`Дата: ${lead.createdAt}`);
-  lines.push("");
-  lines.push(`Имя: ${lead.name}`);
-  lines.push(`Телефон: ${lead.phone}`);
-  if (lead.email) lines.push(`Email: ${lead.email}`);
-  if (lead.preferredContact) lines.push(`Как связаться: ${lead.preferredContact}`);
-  if (lead.service) lines.push(`Услуга: ${lead.service}`);
-  if (lead.message) {
-    lines.push("");
-    lines.push("Комментарий:");
-    lines.push(lead.message);
-  }
-  if (lead.ip) lines.push(`\nIP: ${lead.ip}`);
-  return lines.join("\n");
+function escapeHtml(s: string) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-async function sendTelegramMessage(token: string, chatId: string, text: string) {
+function formatDateRu(iso: string, timeZone: string) {
+  const d = new Date(iso);
+  // dd.mm.yyyy, HH:MM
+  const parts = new Intl.DateTimeFormat("ru-RU", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).formatToParts(d);
+  const day = parts.find((p) => p.type === "day")?.value ?? "00";
+  const month = parts.find((p) => p.type === "month")?.value ?? "00";
+  const year = parts.find((p) => p.type === "year")?.value ?? "0000";
+  const hour = parts.find((p) => p.type === "hour")?.value ?? "00";
+  const minute = parts.find((p) => p.type === "minute")?.value ?? "00";
+  return { short: `${day}.${month}.${year}`, full: `${day}.${month}.${year} ${hour}:${minute}` };
+}
+
+function normalizePhoneForLinks(raw: string) {
+  const digits = raw.replace(/[^\d+]/g, "");
+  // For wa.me, only digits (no +)
+  const wa = digits.replace(/[^\d]/g, "");
+  return { tel: digits.startsWith("+") ? digits : `+${wa}`, wa };
+}
+
+async function formatLeadMessageHtml(lead: Lead) {
+  const timeZone = process.env.LEADS_TIMEZONE ?? "Europe/Prague";
+  const dailyNo = await countLeadsForDay(lead.createdAt, timeZone);
+  const date = formatDateRu(lead.createdAt, timeZone);
+  const phoneLinks = normalizePhoneForLinks(lead.phone);
+
+  const lines: string[] = [];
+  lines.push(`<b>🆕 Заявка #${dailyNo} • ${escapeHtml(date.short)}</b>`);
+  lines.push(`<b>Время:</b> ${escapeHtml(date.full)}`);
+  lines.push(`<b>ID:</b> <code>${escapeHtml(lead.id)}</code>`);
+  lines.push("");
+  lines.push(`<b>Имя:</b> ${escapeHtml(lead.name)}`);
+  lines.push(`<b>Телефон:</b> <a href="tel:${escapeHtml(phoneLinks.tel)}">${escapeHtml(lead.phone)}</a>`);
+  if (lead.email) lines.push(`<b>Email:</b> <a href="mailto:${escapeHtml(lead.email)}">${escapeHtml(lead.email)}</a>`);
+  if (lead.preferredContact) lines.push(`<b>Связь:</b> ${escapeHtml(lead.preferredContact)}`);
+  if (lead.service) lines.push(`<b>Услуга:</b> ${escapeHtml(lead.service)}`);
+  if (lead.message) {
+    lines.push("");
+    lines.push("<b>Комментарий:</b>");
+    lines.push(`<pre>${escapeHtml(lead.message)}</pre>`);
+  }
+  if (lead.ip) lines.push(`\n<b>IP:</b> <code>${escapeHtml(lead.ip)}</code>`);
+
+  return {
+    html: lines.join("\n"),
+    buttons: [
+      [
+        { text: "📞 Позвонить", url: `tel:${phoneLinks.tel}` },
+        { text: "WhatsApp", url: `https://wa.me/${phoneLinks.wa}` }
+      ]
+    ]
+  };
+}
+
+async function sendTelegramMessage(
+  token: string,
+  chatId: string,
+  opts: { html: string; buttons?: Array<Array<{ text: string; url: string }>> }
+) {
   const url = new URL(`https://api.telegram.org/bot${token}/sendMessage`);
   const payload = JSON.stringify({
     chat_id: chatId,
-    text,
-    disable_web_page_preview: true
+    text: opts.html,
+    parse_mode: "HTML",
+    disable_web_page_preview: true,
+    reply_markup: opts.buttons ? { inline_keyboard: opts.buttons } : undefined
   });
 
   await new Promise<void>((resolve, reject) => {
@@ -86,13 +136,13 @@ export async function notifyTelegramLead(lead: Lead) {
   const cfg = getTelegramConfig();
   if (!cfg) return;
 
-  const text = formatLeadMessage(lead);
+  const msg = await formatLeadMessageHtml(lead);
 
   // Send to all configured groups/chats
   await Promise.all(
     cfg.chatIds.map(async (chatId) => {
       try {
-        await sendTelegramMessage(cfg.token, chatId, text);
+        await sendTelegramMessage(cfg.token, chatId, msg);
       } catch (e) {
         console.warn("[telegram] send failed", { chatId, error: String(e) });
       }

@@ -119,13 +119,19 @@ if (fs.existsSync(distDir)) {
         // Cache policy:
         // - index.html: never cache (so updates show immediately)
         // - hashed assets: cache forever
-        // - other static (images): cache 7 days
+        // - images: allow quick updates (revalidate)
+        // - other static: cache 7 days
         if (filePath.endsWith("index.html")) {
           res.setHeader("Cache-Control", "no-cache");
           return;
         }
         if (filePath.includes(`${path.sep}assets${path.sep}`)) {
           res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+          return;
+        }
+        if (filePath.includes(`${path.sep}images${path.sep}`)) {
+          // Users often replace images under the same filename; make browsers revalidate.
+          res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
           return;
         }
         res.setHeader("Cache-Control", "public, max-age=604800");

@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronRight, Sparkles, TrendingUp, Award } from "lucide-react";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { useI18n } from "../i18n/useI18n";
@@ -17,31 +17,60 @@ function lt(v: LText, lang: "cs" | "uk") {
 
 function NoteBlock({ text }: { text: string }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-white/70 leading-relaxed">
-      {text}
+    <div className="group relative overflow-hidden rounded-2xl border border-primary-500/20 bg-gradient-to-br from-primary-500/5 to-transparent px-6 py-5 text-sm text-white/80 leading-relaxed hover:border-primary-500/40 transition-all duration-300">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full blur-3xl group-hover:bg-primary-500/10 transition-all" />
+      <div className="relative flex items-start gap-3">
+        <Sparkles className="w-5 h-5 text-primary-400 flex-shrink-0 mt-0.5" />
+        <div>{text}</div>
+      </div>
     </div>
   );
 }
 
 function PriceTableBlock({ lang, table }: { lang: "cs" | "uk"; table: PriceTable }) {
   return (
-    <Card className="overflow-hidden bg-dark border border-primary-500/20">
-      <div className="flex items-center justify-between gap-4 border-b border-white/10 px-6 py-4">
-        <div className="text-base font-black text-white">{lt(table.title, lang)}</div>
+    <Card className="group relative overflow-hidden bg-gradient-to-br from-dark via-dark to-dark/80 border border-primary-500/30 hover:border-primary-500/60 transition-all duration-500 hover:shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/5 rounded-full blur-3xl group-hover:bg-primary-500/10 transition-all duration-700" />
+      
+      <div className="relative flex items-center justify-between gap-4 border-b border-primary-500/20 bg-gradient-to-r from-primary-500/10 to-transparent px-6 py-5 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-8 bg-gradient-to-b from-primary-400 to-primary-600 rounded-full" />
+          <div className="text-lg font-black text-white tracking-tight">{lt(table.title, lang)}</div>
+        </div>
+        <TrendingUp className="w-5 h-5 text-primary-400/60" />
       </div>
-      <div className="divide-y divide-white/10">
+
+      <div className="relative divide-y divide-white/5">
         {table.rows.map((r, idx) => (
-          <div key={idx} className="grid gap-2 px-6 py-4 md:grid-cols-[1fr_auto] md:items-center">
+          <div 
+            key={idx} 
+            className="grid gap-3 px-6 py-5 md:grid-cols-[1fr_auto] md:items-center hover:bg-primary-500/5 transition-all duration-300 group/row"
+          >
             <div>
-              <div className="font-semibold text-white/90">{lt(r.name, lang)}</div>
-              {r.duration ? <div className="mt-1 text-xs text-white/50">{lt(r.duration, lang)}</div> : null}
+              <div className="font-semibold text-white/95 group-hover/row:text-white transition-colors">{lt(r.name, lang)}</div>
+              {r.duration ? (
+                <div className="mt-1.5 flex items-center gap-2 text-xs text-white/50">
+                  <div className="w-1 h-1 rounded-full bg-primary-500/50" />
+                  {lt(r.duration, lang)}
+                </div>
+              ) : null}
             </div>
-            <div className="text-lg font-black text-primary-400 md:text-right">{r.price}</div>
+            <div className="relative">
+              <div className="text-2xl font-black bg-gradient-to-r from-primary-400 to-primary-300 bg-clip-text text-transparent md:text-right group-hover/row:from-primary-300 group-hover/row:to-primary-200 transition-all">
+                {r.price}
+              </div>
+            </div>
           </div>
         ))}
       </div>
+
       {table.note ? (
-        <div className="border-t border-white/10 px-6 py-4 text-sm text-white/60">{lt(table.note, lang)}</div>
+        <div className="relative border-t border-primary-500/10 bg-gradient-to-r from-primary-500/5 to-transparent px-6 py-4 text-sm text-white/70 backdrop-blur-sm">
+          <div className="flex items-start gap-2">
+            <Award className="w-4 h-4 text-primary-400/70 flex-shrink-0 mt-0.5" />
+            <div>{lt(table.note, lang)}</div>
+          </div>
+        </div>
       ) : null}
     </Card>
   );
@@ -370,7 +399,7 @@ export default function PricesPage() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden min-h-[400px] md:min-h-[480px] flex items-center">
         <div className="absolute inset-0">
           {(() => {
             const hero = heroSources("services", lang);
@@ -382,46 +411,109 @@ export default function PricesPage() {
               </picture>
             );
           })()}
-          <div className="absolute inset-0 bg-gradient-to-r from-dark/95 via-dark/80 to-dark/85" />
+          <div className="absolute inset-0 bg-gradient-to-r from-dark/98 via-dark/90 to-dark/85" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(16,185,129,0.15),transparent_60%)]" />
         </div>
-        <div className="relative z-10 min-h-[220px] md:min-h-[260px] lg:min-h-[300px]" />
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-3xl animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500/10 backdrop-blur border border-primary-500/30 rounded-full text-primary-400 font-semibold text-sm mb-6">
+              <Sparkles className="w-4 h-4" />
+              {lang === "cs" ? "Transparentní ceník" : "Прозорі ціни"}
+            </div>
+            
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight">
+              <span className="bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent">
+                {t("prices.titleA")}{" "}
+              </span>
+              <span className="bg-gradient-to-r from-primary-400 via-primary-500 to-primary-300 bg-clip-text text-transparent animate-pulse">
+                {t("prices.titleB")}
+              </span>
+            </h1>
+            
+            <p className="text-xl text-white/80 leading-relaxed mb-8">
+              {t("prices.lead")}
+            </p>
+            
+            <div className="flex flex-wrap gap-4">
+              <NavLink to="/contacts#form">
+                <Button size="lg" className="text-lg group">
+                  {lang === "cs" ? "Získat cenovou nabídku" : "Отримати кошторис"}
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </NavLink>
+            </div>
+          </div>
+        </div>
+
+        {/* Декоративные элементы */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent" />
       </section>
 
-      <section className="relative py-20 bg-dark-50 overflow-hidden">
+      <section className="relative py-20 bg-gradient-to-b from-dark via-dark-50 to-dark overflow-hidden">
         <TechLines />
-        <div className="container mx-auto px-4">
-          <div className="mb-10 text-center">
-            <h1 className="text-4xl md:text-5xl font-black text-white">
-              {t("prices.titleA")} <span className="text-primary-500">{t("prices.titleB")}</span>
-            </h1>
-            <p className="mt-3 text-white/70">{t("prices.lead")}</p>
-          </div>
-
+        
+        {/* Декоративные элементы */}
+        <div className="absolute top-40 right-20 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-40 left-20 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />
+        
+        <div className="container mx-auto px-4 relative z-10">
           {/* Quick navigation */}
-          <div className="mb-10 flex flex-wrap justify-center gap-2">
-            {quick.map((q) => (
-              <a
-                key={q.id}
-                href={`#${q.id}`}
-                className="inline-flex items-center gap-2 rounded-full border border-primary-500/25 bg-dark px-4 py-2 text-sm font-semibold text-white/80 hover:text-white hover:border-primary-500/50 hover:bg-primary-500/10"
-              >
-                {q.title}
-                <ChevronRight className="h-4 w-4 text-primary-500/70" />
-              </a>
-            ))}
+          <div className="mb-16">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 text-sm font-bold text-primary-400 mb-3">
+                <div className="w-8 h-px bg-gradient-to-r from-transparent to-primary-500" />
+                {lang === "cs" ? "Rychlá navigace" : "Швидка навігація"}
+                <div className="w-8 h-px bg-gradient-to-l from-transparent to-primary-500" />
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
+              {quick.map((q, idx) => (
+                <a
+                  key={q.id}
+                  href={`#${q.id}`}
+                  className="group relative overflow-hidden rounded-2xl border border-primary-500/30 bg-gradient-to-br from-dark via-dark to-primary-500/5 px-5 py-3 text-sm font-bold text-white/90 hover:text-white hover:border-primary-500/60 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] transition-all duration-300"
+                  style={{ animationDelay: `${idx * 50}ms` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary-500/0 via-primary-500/10 to-primary-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative flex items-center gap-2">
+                    <span>{q.title}</span>
+                    <ChevronRight className="w-4 h-4 text-primary-400 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </a>
+              ))}
+            </div>
           </div>
 
-          <div className="grid gap-10 max-w-5xl mx-auto">
-            {sections.map((s) => (
-              <div key={s.id} id={s.id} className="scroll-mt-24">
-                <div className="mb-4">
-                  <div className="text-2xl md:text-3xl font-black text-white">
-                    {lt(s.title, lang)}
+          <div className="grid gap-16 max-w-5xl mx-auto">
+            {sections.map((s, sectionIdx) => (
+              <div 
+                key={s.id} 
+                id={s.id} 
+                className="scroll-mt-24 animate-fade-in"
+                style={{ animationDelay: `${sectionIdx * 100}ms` }}
+              >
+                <div className="mb-6 relative">
+                  <div className="flex items-center gap-4 mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-12 bg-gradient-to-b from-primary-400 to-primary-600 rounded-full" />
+                      <div className="text-3xl md:text-4xl font-black bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+                        {lt(s.title, lang)}
+                      </div>
+                    </div>
                   </div>
-                  {s.lead ? <div className="mt-2 text-white/60">{lt(s.lead, lang)}</div> : null}
+                  {s.lead ? (
+                    <div className="mt-3 text-white/70 text-lg pl-6 border-l-2 border-primary-500/30">
+                      {lt(s.lead, lang)}
+                    </div>
+                  ) : null}
+                  
+                  {/* Декоративная линия */}
+                  <div className="mt-6 h-px bg-gradient-to-r from-primary-500/50 via-primary-500/20 to-transparent" />
                 </div>
 
-                <div className="grid gap-4">
+                <div className="grid gap-5">
                   {s.blocks.map((b, idx) => {
                     if ("rows" in b) return <PriceTableBlock key={idx} lang={lang} table={b} />;
                     return <NoteBlock key={idx} text={lt(b.note, lang)} />;
@@ -432,22 +524,42 @@ export default function PricesPage() {
           </div>
 
           {/* CTA */}
-          <div className="mt-14 text-center">
-            <div className="mx-auto max-w-3xl rounded-2xl border border-primary-500/20 bg-dark p-8">
-              <div className="text-2xl md:text-3xl font-black text-white">{t("prices.ctaTitle")}</div>
-              <div className="mt-2 text-white/70">{t("prices.ctaText")}</div>
-              <div className="mt-6 flex flex-wrap justify-center gap-4">
-                <NavLink to="/contacts#form">
-                  <Button size="lg" className="group">
-                    {t("prices.ctaBtn")}
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Button>
-                </NavLink>
-                <NavLink to="/services">
-                  <Button size="lg" variant="outline">
-                    {t("prices.backToServices")}
-                  </Button>
-                </NavLink>
+          <div className="mt-20 text-center">
+            <div className="relative mx-auto max-w-4xl rounded-3xl border border-primary-500/30 bg-gradient-to-br from-dark via-primary-500/5 to-dark p-12 overflow-hidden hover:border-primary-500/50 transition-all duration-500 group">
+              {/* Декоративные элементы */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl group-hover:bg-primary-500/20 transition-all duration-700" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl group-hover:bg-primary-500/20 transition-all duration-700" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.1),transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              
+              <div className="relative">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500/10 border border-primary-500/30 rounded-full text-primary-400 font-bold text-sm mb-6">
+                  <Sparkles className="w-4 h-4" />
+                  {lang === "cs" ? "Získejte svoji nabídku" : "Отримайте свою пропозицію"}
+                </div>
+                
+                <div className="text-3xl md:text-4xl font-black mb-4">
+                  <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent">
+                    {t("prices.ctaTitle")}
+                  </span>
+                </div>
+                
+                <div className="mt-4 text-lg text-white/80 max-w-2xl mx-auto leading-relaxed">
+                  {t("prices.ctaText")}
+                </div>
+                
+                <div className="mt-8 flex flex-wrap justify-center gap-4">
+                  <NavLink to="/contacts#form">
+                    <Button size="lg" className="group text-lg px-8 py-6 hover:shadow-[0_0_40px_rgba(16,185,129,0.3)]">
+                      {t("prices.ctaBtn")}
+                      <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-2" />
+                    </Button>
+                  </NavLink>
+                  <NavLink to="/services">
+                    <Button size="lg" variant="outline" className="text-lg px-8 py-6 hover:bg-primary-500/10">
+                      {t("prices.backToServices")}
+                    </Button>
+                  </NavLink>
+                </div>
               </div>
             </div>
           </div>

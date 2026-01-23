@@ -85,6 +85,7 @@ export const dict: Record<Lang, Dict> = {
     // nav / common
     "nav.home": "Domů",
     "nav.services": "Služby",
+    "nav.prices": "Ceník",
     "nav.about": "O nás",
     "nav.contacts": "Kontakty",
     "cta.book": "Objednat se",
@@ -135,6 +136,7 @@ export const dict: Record<Lang, Dict> = {
     "services.titleB": "děláme rychle a kvalitně",
     "services.lead": "Kompletní servis a opravy. Pracujeme se všemi značkami a modely.",
     "services.bookService": "Objednat službu",
+    "services.priceListBtn": "Ceník",
     "services.notFoundTitle": "Nenašli jste službu?",
     "services.notFoundText": "Napište nám a doporučíme nejlepší řešení pro váš vůz.",
     "services.contactsBtn": "Kontakty",
@@ -328,6 +330,15 @@ export const dict: Record<Lang, Dict> = {
     "svc.repair.b2": "Pohon 4x4",
     "svc.repair.b3": "Diagnostika elektro",
     "svc.repair.b4": "Záruka na uzly"
+    ,
+    // prices
+    "prices.titleA": "Ceník",
+    "prices.titleB": "služeb",
+    "prices.lead": "Transparentní ceny a jasné podmínky. Pokud je potřeba, upřesníme cenu podle vozu a rozsahu prací.",
+    "prices.ctaTitle": "Chcete přesnou cenu pro vaše auto?",
+    "prices.ctaText": "Pošlete nám poptávku — zavoláme a upřesníme detaily i rozpočet.",
+    "prices.ctaBtn": "Odeslat poptávku",
+    "prices.backToServices": "Zpět na služby"
   },
 
   uk: {
@@ -409,6 +420,7 @@ export const dict: Record<Lang, Dict> = {
     // nav / common
     "nav.home": "Головна",
     "nav.services": "Послуги",
+    "nav.prices": "Прайс",
     "nav.about": "Про нас",
     "nav.contacts": "Контакти",
     "cta.book": "Записатися",
@@ -460,6 +472,7 @@ export const dict: Record<Lang, Dict> = {
     "services.titleB": "робим швидко і якісно",
     "services.lead": "Повний спектр ремонту та обслуговування. Працюємо з будь-якими марками й моделями.",
     "services.bookService": "Записатися на послугу",
+    "services.priceListBtn": "Прайс-лист",
     "services.notFoundTitle": "Не знайшли потрібну послугу?",
     "services.notFoundText": "Напишіть нам — підберемо оптимальне рішення для вашого авто.",
     "services.contactsBtn": "Контакти",
@@ -653,6 +666,15 @@ export const dict: Record<Lang, Dict> = {
     "svc.repair.b2": "Ремонт 4x4",
     "svc.repair.b3": "Діагностика електрики",
     "svc.repair.b4": "Гарантія на вузли"
+    ,
+    // prices
+    "prices.titleA": "Прайс",
+    "prices.titleB": "лист",
+    "prices.lead": "Прозорі ціни та зрозумілі умови. За потреби уточнимо вартість під ваше авто та обсяг робіт.",
+    "prices.ctaTitle": "Потрібна точна ціна саме для вашого авто?",
+    "prices.ctaText": "Залиште заявку — ми передзвонимо та уточнимо деталі й кошторис.",
+    "prices.ctaBtn": "Залишити заявку",
+    "prices.backToServices": "Назад до послуг"
   }
 };
 

@@ -8,6 +8,7 @@ import { useI18n } from "../../i18n/useI18n";
 const nav = [
   { to: "/", key: "nav.home" },
   { to: "/services", key: "nav.services" },
+  { to: "/prices", key: "nav.prices" },
   { to: "/about", key: "nav.about" },
   { to: "/contacts", key: "nav.contacts" }
 ];

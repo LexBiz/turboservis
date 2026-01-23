@@ -7,6 +7,31 @@ import { useI18n } from "../i18n/useI18n";
 import { heroSources, imageUrl, serviceImage } from "../lib/images";
 import { TechLines } from "../components/TechLines";
 
+function priceAnchorForServiceId(id: string) {
+  switch (id) {
+    case "tires":
+      return "tires";
+    case "ac":
+      return "ac";
+    case "alignment":
+      return "alignment";
+    case "dpf":
+      return "mechanical";
+    case "engine":
+      return "mechanical";
+    case "parts":
+      return "parts";
+    case "bodywork":
+      return "bodywork";
+    case "crash":
+      return "crash";
+    case "injectors":
+      return "injectors";
+    default:
+      return "";
+  }
+}
+
 export default function ServicesPage() {
   const { t, lang } = useI18n();
   return (
@@ -77,6 +102,11 @@ export default function ServicesPage() {
                           {t("services.soon")}
                         </div>
                       )}
+                      <div className="mt-1 text-sm text-white/70">
+                        {service.priceFromCzk
+                          ? `${t("price.from")} ${service.priceFromCzk} Kč`
+                          : t("price.onRequest")}
+                      </div>
                     </div>
                   </div>
 
@@ -93,12 +123,22 @@ export default function ServicesPage() {
                     ))}
                   </div>
 
-                  <NavLink to="/contacts#form">
-                    <Button variant="primary" className="w-full group">
-                      {t("services.bookService")}
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </NavLink>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <NavLink to="/contacts#form">
+                      <Button variant="primary" className="w-full group">
+                        {t("services.bookService")}
+                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </Button>
+                    </NavLink>
+                    <NavLink to={`/prices${(() => {
+                      const a = priceAnchorForServiceId(service.id);
+                      return a ? `#${a}` : "";
+                    })()}`}>
+                      <Button variant="outline" className="w-full">
+                        {t("services.priceListBtn")}
+                      </Button>
+                    </NavLink>
+                  </div>
                 </div>
               </Card>
             ))}

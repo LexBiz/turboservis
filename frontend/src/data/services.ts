@@ -34,7 +34,9 @@ export const services: Service[] = [
   },
   {
     id: "alignment",
-    icon: Ruler
+    icon: Ruler,
+    // geometry (passenger cars) from the price list
+    priceFromCzk: 1500
   },
   {
     id: "bodywork",
@@ -42,7 +44,9 @@ export const services: Service[] = [
   },
   {
     id: "dpf",
-    icon: Filter
+    icon: Filter,
+    // DPF cleaning from the price list
+    priceFromCzk: 3630
   },
   {
     id: "injectors",
@@ -50,16 +54,21 @@ export const services: Service[] = [
   },
   {
     id: "ac",
-    icon: Snowflake
+    icon: Snowflake,
+    // AC service: cheapest item is disinfection (30 min)
+    priceFromCzk: 695
   },
   {
     id: "tires",
-    icon: CircleDot
+    icon: CircleDot,
+    // passenger cars 13–15" full swap + balancing
+    priceFromCzk: 1089
   },
   {
     id: "engine",
     icon: Settings,
-    priceFromCzk: undefined
+    // hour rate "from" (mechanic work)
+    priceFromCzk: 895
   },
   {
     id: "crash",

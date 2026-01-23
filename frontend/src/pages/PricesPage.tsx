@@ -193,8 +193,8 @@ function TiresPriceBlock({ lang }: { lang: "cs" | "uk" }) {
 
         <div className="mt-5 rounded-2xl border border-primary-500/20 bg-primary-500/5 px-5 py-4 text-sm text-white/70">
           {lang === "cs"
-            ? "Ceny jsou za sadu 4 kol. Bez DPH (+21%). Pro RUNFLAT může být příplatek za složitost."
-            : "Ціни за комплект із 4 коліс. Без ПДВ (+21%). Для RUNFLAT можлива доплата за складність."}
+            ? "Ceny jsou za sadu 4 kol. Včetně DPH (21%). Pro RUNFLAT může být příplatek za složitost."
+            : "Ціни за комплект із 4 коліс. З ПДВ (21%). Для RUNFLAT можлива доплата за складність."}
         </div>
       </div>
     </Card>
@@ -206,8 +206,8 @@ const sections: PriceSection[] = [
     id: "tires",
     title: { cs: "Ceník: Pneuservis", uk: "Прайс-лист: Шиномонтаж" },
     lead: {
-      cs: "Ceny jsou uvedeny za sadu 4 kol. Bez DPH / +21% DPH.",
-      uk: "Ціни вказані за комплект із 4 коліс. Без ПДВ / +21% DPH."
+      cs: "Ceny jsou uvedeny za sadu 4 kol. Včetně DPH (21%).",
+      uk: "Ціни вказані за комплект із 4 коліс. З ПДВ (21%)."
     },
     blocks: [
       {
@@ -218,8 +218,8 @@ const sections: PriceSection[] = [
           { name: { cs: "Lepicí závaží (1 g)", uk: "Клейкий грузик (1 г)" }, price: "2,5 Kč" }
         ],
         note: {
-          cs: "V ceně jsou závaží do 100 g na sadu. Ceny jsou bez DPH (+21%). Pro RUNFLAT může být příplatek za složitost.",
-          uk: "У вартість включені грузики до 100 г на комплект. Ціни без ПДВ (+21%). Для RUNFLAT можлива доплата за складність."
+          cs: "V ceně jsou závaží do 100 g na sadu. Ceny jsou včetně DPH (21%). Pro RUNFLAT může být příplatek za složitost.",
+          uk: "У вартість включені грузики до 100 г на комплект. Ціни з ПДВ (21%). Для RUNFLAT можлива доплата за складність."
         }
       }
     ]
@@ -249,8 +249,8 @@ const sections: PriceSection[] = [
           }
         ],
         note: {
-          cs: "Cena chladiva: R134a — 3 Kč/g, R1234yf — 7 Kč/g. Ceny bez DPH (+21%).",
-          uk: "Вартість холодоагенту: R134a — 3 Kč/г, R1234yf — 7 Kč/г. Ціни без ПДВ (+21%)."
+          cs: "Cena chladiva: R134a — 3 Kč/g, R1234yf — 7 Kč/g. Ceny jsou včetně DPH (21%).",
+          uk: "Вартість холодоагенту: R134a — 3 Kč/г, R1234yf — 7 Kč/г. Ціни з ПДВ (21%)."
         }
       }
     ]
@@ -272,8 +272,8 @@ const sections: PriceSection[] = [
           }
         ],
         note: {
-          cs: "Ceny jsou bez DPH (+21%).",
-          uk: "Ціни без ПДВ (+21%)."
+          cs: "Ceny jsou včetně DPH (21%).",
+          uk: "Ціни з ПДВ (21%)."
         }
       }
     ]
@@ -315,8 +315,8 @@ const sections: PriceSection[] = [
           }
         ],
         note: {
-          cs: "Ceny jsou bez DPH (+21%). Konečná cena se domlouvá před zahájením prací.",
-          uk: "Ціни без ПДВ (+21%). Остаточна ціна узгоджується до початку робіт."
+          cs: "Ceny jsou včetně DPH (21%). Konečná cena se domlouvá před zahájením prací.",
+          uk: "Ціни з ПДВ (21%). Остаточна ціна узгоджується до початку робіт."
         }
       }
     ]
@@ -342,8 +342,8 @@ const sections: PriceSection[] = [
           }
         ],
         note: {
-          cs: "Ceny jsou bez DPH (+21%).",
-          uk: "Ціни без ПДВ (+21%)."
+          cs: "Ceny jsou včetně DPH (21%).",
+          uk: "Ціни з ПДВ (21%)."
         }
       }
     ]
@@ -363,8 +363,8 @@ const sections: PriceSection[] = [
           { name: { cs: "Čištění DPF (od)", uk: "Очищення DPF (від)" }, price: "od 3 630 Kč" }
         ],
         note: {
-          cs: "Ceny jsou bez DPH (+21%). Cena se může měnit dle složitosti.",
-          uk: "Ціни без ПДВ (+21%). Вартість може змінюватися залежно від складності."
+          cs: "Ceny jsou včetně DPH (21%). Cena se může měnit dle složitosti.",
+          uk: "Ціни з ПДВ (21%). Вартість може змінюватися залежно від складності."
         }
       }
     ]

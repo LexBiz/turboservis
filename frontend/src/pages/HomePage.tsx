@@ -176,11 +176,13 @@ export default function HomePage() {
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {[
-                { key: "home.note.egrDpf", img: "note/egr-dpf.png", fallback: Wrench },
-                { key: "home.note.injectorsSoon", img: "note/injectors.png", fallback: Clock },
-                { key: "home.note.vehicles", img: "note/vans.png", fallback: Shield },
-                { key: "home.note.noOverhaul", img: "note/engine.png", fallback: Star },
-                { key: "home.note.b2b", img: "note/b2b.png", fallback: CheckCircle2 }
+                // Use existing images shipped in /public/images to avoid 404s.
+                // If you later add dedicated note icons, you can swap these to `note/...`.
+                { key: "home.note.egrDpf", img: "service-egrdpf-800x800.jpg", fallback: Wrench },
+                { key: "home.note.injectorsSoon", img: "service-injectors-800x800.jpg", fallback: Clock },
+                { key: "home.note.vehicles", img: "service-maintenance-800x800.jpg", fallback: Shield },
+                { key: "home.note.noOverhaul", img: "service-engine-800x800.jpg", fallback: Star },
+                { key: "home.note.b2b", img: "service-parts-800x800.jpg", fallback: CheckCircle2 }
               ].map((item) => (
                 <div
                   key={item.key}

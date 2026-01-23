@@ -1,12 +1,21 @@
 import type { Lang } from "../i18n/types";
 
 export function imageUrl(filename: string) {
-  // filename may contain spaces; encode safely
-  return `/images/${encodeURIComponent(filename)}`;
+  // filename may contain spaces; encode safely BUT keep path separators (`/`).
+  // `encodeURIComponent` would turn `/` into `%2F` which breaks nested paths like `note/egr-dpf.png`.
+  const safe = filename
+    .split("/")
+    .map((seg) => encodeURIComponent(seg))
+    .join("/");
+  return `/images/${safe}`;
 }
 
 export function optImageUrl(filename: string) {
-  return `/images/opt/${encodeURIComponent(filename)}`;
+  const safe = filename
+    .split("/")
+    .map((seg) => encodeURIComponent(seg))
+    .join("/");
+  return `/images/opt/${safe}`;
 }
 
 function langPrefix(lang: Lang) {

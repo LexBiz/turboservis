@@ -152,7 +152,39 @@ function TiresPriceBlock({ lang }: { lang: "cs" | "uk" }) {
       </div>
 
       <div className="relative px-6 py-6">
-        <div className="overflow-x-auto">
+        {/* Mobile: cards per diameter (no horizontal scroll) */}
+        <div className="md:hidden grid gap-4">
+          {sizes.map((s) => (
+            <div
+              key={s.key}
+              className="overflow-hidden rounded-2xl border border-primary-500/20 bg-gradient-to-br from-dark via-dark to-primary-500/5"
+            >
+              <div className="flex items-center justify-between gap-3 border-b border-white/10 px-5 py-4">
+                <div className="text-sm font-black text-white/80">{lang === "cs" ? "Průměr disku" : "Діаметр диска"}</div>
+                <div className="text-base font-black bg-gradient-to-r from-primary-300 to-primary-200 bg-clip-text text-transparent">
+                  {s.label}
+                </div>
+              </div>
+
+              <div className="divide-y divide-white/10">
+                {rowLabels.map((r) => {
+                  const v = tiresMatrix[tab][s.key][r.key];
+                  return (
+                    <div key={r.key} className="px-5 py-4">
+                      <div className="text-sm font-semibold text-white/90">{lt(r.label, lang)}</div>
+                      <div className="mt-2 text-xl font-black bg-gradient-to-r from-primary-400 to-primary-200 bg-clip-text text-transparent">
+                        {v}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop: table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-[720px] w-full border-separate border-spacing-0">
             <thead>
               <tr className="text-left">

@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { ArrowRight, ChevronRight, Sparkles, TrendingUp, Award } from "lucide-react";
+import { useState } from "react";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { useI18n } from "../i18n/useI18n";
@@ -7,7 +8,7 @@ import { heroSources } from "../lib/images";
 import { TechLines } from "../components/TechLines";
 
 type LText = { cs: string; uk: string };
-type PriceRow = { name: LText; price: string; duration?: LText };
+type PriceRow = { name: LText; price: string };
 type PriceTable = { title: LText; rows: PriceRow[]; note?: LText };
 type PriceSection = { id: string; title: LText; lead?: LText; blocks: Array<PriceTable | { note: LText }> };
 
@@ -48,12 +49,6 @@ function PriceTableBlock({ lang, table }: { lang: "cs" | "uk"; table: PriceTable
           >
             <div>
               <div className="font-semibold text-white/95 group-hover/row:text-white transition-colors">{lt(r.name, lang)}</div>
-              {r.duration ? (
-                <div className="mt-1.5 flex items-center gap-2 text-xs text-white/50">
-                  <div className="w-1 h-1 rounded-full bg-primary-500/50" />
-                  {lt(r.duration, lang)}
-                </div>
-              ) : null}
             </div>
             <div className="relative">
               <div className="text-2xl font-black bg-gradient-to-r from-primary-400 to-primary-300 bg-clip-text text-transparent md:text-right group-hover/row:from-primary-300 group-hover/row:to-primary-200 transition-all">
@@ -76,6 +71,136 @@ function PriceTableBlock({ lang, table }: { lang: "cs" | "uk"; table: PriceTable
   );
 }
 
+type TireKey = "car" | "suv" | "runflat";
+type TireSizeKey = "13-15" | "16-18" | "19-23";
+type TiresMatrix = Record<TireKey, Record<TireSizeKey, { full: string; mount: string; storage: string; disposal: string }>>;
+
+const tiresMatrix: TiresMatrix = {
+  car: {
+    "13-15": { full: "1 089 Kč", mount: "726 Kč", storage: "968 Kč", disposal: "45 Kč / ks" },
+    "16-18": { full: "1 210 Kč", mount: "995 Kč", storage: "968 Kč", disposal: "45 Kč / ks" },
+    "19-23": { full: "1 694 Kč", mount: "1 210 Kč", storage: "968 Kč", disposal: "45 Kč / ks" }
+  },
+  suv: {
+    "13-15": { full: "1 295 Kč", mount: "1 095 Kč", storage: "968 Kč", disposal: "45 Kč / ks" },
+    "16-18": { full: "1 595 Kč", mount: "1 295 Kč", storage: "968 Kč", disposal: "45 Kč / ks" },
+    "19-23": { full: "2 178 Kč", mount: "1 495 Kč", storage: "968 Kč", disposal: "45 Kč / ks" }
+  },
+  runflat: {
+    "13-15": { full: "1 295 Kč", mount: "1 095 Kč", storage: "1 210 Kč", disposal: "45 Kč / ks" },
+    "16-18": { full: "1 595 Kč", mount: "1 295 Kč", storage: "1 210 Kč", disposal: "45 Kč / ks" },
+    "19-23": { full: "2 195 Kč", mount: "1 495 Kč", storage: "1 210 Kč", disposal: "45 Kč / ks" }
+  }
+};
+
+function TiresPriceBlock({ lang }: { lang: "cs" | "uk" }) {
+  const [tab, setTab] = useState<TireKey>("car");
+
+  const tabs: Array<{ key: TireKey; label: LText }> = [
+    { key: "car", label: { cs: "Osobní", uk: "Легкові" } },
+    { key: "suv", label: { cs: "SUV / 4×4", uk: "SUV / 4×4" } },
+    { key: "runflat", label: { cs: "RUNFLAT", uk: "RUNFLAT" } }
+  ];
+
+  const sizes: Array<{ key: TireSizeKey; label: string }> = [
+    { key: "13-15", label: '13"–15"' },
+    { key: "16-18", label: '16"–18"' },
+    { key: "19-23", label: '19"–23"' }
+  ];
+
+  const rowLabels: Array<{ key: "full" | "mount" | "storage" | "disposal"; label: LText }> = [
+    { key: "full", label: { cs: "Kompletní výměna pneu + vyvážení (4 kola)", uk: "Повна заміна шин + балансування (4 колеса)" } },
+    { key: "mount", label: { cs: "Demontáž/montáž + vyvážení (4 kola)", uk: "Розбір/збір коліс + балансування (4 колеса)" } },
+    { key: "storage", label: { cs: "Sezónní uskladnění", uk: "Сезонне зберігання шин" } },
+    { key: "disposal", label: { cs: "Likvidace pneumatik", uk: "Утилізація шин" } }
+  ];
+
+  return (
+    <Card className="group relative overflow-hidden bg-gradient-to-br from-dark via-dark to-dark/80 border border-primary-500/30 hover:border-primary-500/60 transition-all duration-500 hover:shadow-[0_0_40px_rgba(16,185,129,0.15)]">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/5 rounded-full blur-3xl group-hover:bg-primary-500/10 transition-all duration-700" />
+
+      <div className="relative border-b border-primary-500/20 bg-gradient-to-r from-primary-500/10 to-transparent px-6 py-5">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-8 bg-gradient-to-b from-primary-400 to-primary-600 rounded-full" />
+            <div className="text-lg font-black text-white tracking-tight">
+              {lang === "cs" ? "Ceny podle průměru disku" : "Ціни за діаметром диска"}
+            </div>
+          </div>
+
+          <div className="inline-flex rounded-2xl border border-primary-500/25 bg-dark p-1">
+            {tabs.map((t) => {
+              const active = tab === t.key;
+              return (
+                <button
+                  key={t.key}
+                  type="button"
+                  onClick={() => setTab(t.key)}
+                  className={[
+                    "px-4 py-2 text-sm font-black rounded-xl transition-all",
+                    active
+                      ? "bg-primary-500 text-white shadow-[0_10px_30px_rgba(16,185,129,0.25)]"
+                      : "text-white/70 hover:text-white hover:bg-primary-500/10"
+                  ].join(" ")}
+                >
+                  {lt(t.label, lang)}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div className="relative px-6 py-6">
+        <div className="overflow-x-auto">
+          <table className="min-w-[720px] w-full border-separate border-spacing-0">
+            <thead>
+              <tr className="text-left">
+                <th className="sticky left-0 z-10 bg-dark pr-4 pb-3 text-sm font-black text-white/80">
+                  {lang === "cs" ? "Služba" : "Послуга"}
+                </th>
+                {sizes.map((s) => (
+                  <th key={s.key} className="pb-3 px-3 text-center text-sm font-black text-primary-300">
+                    {s.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rowLabels.map((r) => (
+                <tr key={r.key} className="group/row">
+                  <td className="sticky left-0 z-10 bg-dark pr-4 py-4 align-top border-t border-white/10">
+                    <div className="font-semibold text-white/95 group-hover/row:text-white">{lt(r.label, lang)}</div>
+                  </td>
+                  {sizes.map((s) => {
+                    const v = tiresMatrix[tab][s.key][r.key];
+                    return (
+                      <td
+                        key={s.key}
+                        className="py-4 px-3 text-center border-t border-white/10 group-hover/row:bg-primary-500/5 transition-colors"
+                      >
+                        <div className="text-lg font-black bg-gradient-to-r from-primary-400 to-primary-200 bg-clip-text text-transparent">
+                          {v}
+                        </div>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-primary-500/20 bg-primary-500/5 px-5 py-4 text-sm text-white/70">
+          {lang === "cs"
+            ? "Ceny jsou za sadu 4 kol. Bez DPH (+21%). Pro RUNFLAT může být příplatek za složitost."
+            : "Ціни за комплект із 4 коліс. Без ПДВ (+21%). Для RUNFLAT можлива доплата за складність."}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 const sections: PriceSection[] = [
   {
     id: "tires",
@@ -85,87 +210,6 @@ const sections: PriceSection[] = [
       uk: "Ціни вказані за комплект із 4 коліс. Без ПДВ / +21% DPH."
     },
     blocks: [
-      {
-        title: { cs: "Osobní auta (13–15\")", uk: "Легкові авто (13\"–15\")" },
-        rows: [
-          { name: { cs: "Kompletní výměna pneu + vyvážení", uk: "Повна заміна шин + балансування" }, price: "1 089 Kč" },
-          { name: { cs: "Demontáž/montáž + vyvážení", uk: "Розбір/збір коліс + балансування" }, price: "726 Kč" },
-          { name: { cs: "Sezónní uskladnění pneumatik", uk: "Сезонне зберігання шин" }, price: "968 Kč" },
-          { name: { cs: "Likvidace pneumatik (1 ks)", uk: "Утилізація шин (1 шт.)" }, price: "45 Kč" }
-        ]
-      },
-      {
-        title: { cs: "Osobní auta (16–18\")", uk: "Легкові авто (16\"–18\")" },
-        rows: [
-          { name: { cs: "Kompletní výměna pneu + vyvážení", uk: "Повна заміна шин + балансування" }, price: "1 210 Kč" },
-          { name: { cs: "Demontáž/montáž + vyvážení", uk: "Розбір/збір коліс + балансування" }, price: "995 Kč" },
-          { name: { cs: "Sezónní uskladnění pneumatik", uk: "Сезонне зберігання шин" }, price: "968 Kč" },
-          { name: { cs: "Likvidace pneumatik (1 ks)", uk: "Утилізація шин (1 шт.)" }, price: "45 Kč" }
-        ]
-      },
-      {
-        title: { cs: "Osobní auta (19–23\")", uk: "Легкові авто (19\"–23\")" },
-        rows: [
-          { name: { cs: "Kompletní výměna pneu + vyvážení", uk: "Повна заміна шин + балансування" }, price: "1 694 Kč" },
-          { name: { cs: "Demontáž/montáž + vyvážení", uk: "Розбір/збір коліс + балансування" }, price: "1 210 Kč" },
-          { name: { cs: "Sezónní uskladnění pneumatik", uk: "Сезонне зберігання шин" }, price: "968 Kč" },
-          { name: { cs: "Likvidace pneumatik (1 ks)", uk: "Утилізація шин (1 шт.)" }, price: "45 Kč" }
-        ]
-      },
-      {
-        title: { cs: "SUV / 4×4 (13–15\")", uk: "SUV / 4×4 (13\"–15\")" },
-        rows: [
-          { name: { cs: "Kompletní výměna pneu + vyvážení", uk: "Повна заміна шин + балансування" }, price: "1 295 Kč" },
-          { name: { cs: "Demontáž/montáž + vyvážení", uk: "Розбір/збір коліс + балансування" }, price: "1 095 Kč" },
-          { name: { cs: "Sezónní uskladnění pneumatik", uk: "Сезонне зберігання шин" }, price: "968 Kč" },
-          { name: { cs: "Likvidace pneumatik (1 ks)", uk: "Утилізація шин (1 шт.)" }, price: "45 Kč" }
-        ]
-      },
-      {
-        title: { cs: "SUV / 4×4 (16–18\")", uk: "SUV / 4×4 (16\"–18\")" },
-        rows: [
-          { name: { cs: "Kompletní výměna pneu + vyvážení", uk: "Повна заміна шин + балансування" }, price: "1 595 Kč" },
-          { name: { cs: "Demontáž/montáž + vyvážení", uk: "Розбір/збір коліс + балансування" }, price: "1 295 Kč" },
-          { name: { cs: "Sezónní uskladnění pneumatik", uk: "Сезонне зберігання шин" }, price: "968 Kč" },
-          { name: { cs: "Likvidace pneumatik (1 ks)", uk: "Утилізація шин (1 шт.)" }, price: "45 Kč" }
-        ]
-      },
-      {
-        title: { cs: "SUV / 4×4 (19–23\")", uk: "SUV / 4×4 (19\"–23\")" },
-        rows: [
-          { name: { cs: "Kompletní výměna pneu + vyvážení", uk: "Повна заміна шин + балансування" }, price: "2 178 Kč" },
-          { name: { cs: "Demontáž/montáž + vyvážení", uk: "Розбір/збір коліс + балансування" }, price: "1 495 Kč" },
-          { name: { cs: "Sezónní uskladnění pneumatik", uk: "Сезонне зберігання шин" }, price: "968 Kč" },
-          { name: { cs: "Likvidace pneumatik (1 ks)", uk: "Утилізація шин (1 шт.)" }, price: "45 Kč" }
-        ]
-      },
-      {
-        title: { cs: "RUNFLAT (13–15\")", uk: "RUNFLAT (13\"–15\")" },
-        rows: [
-          { name: { cs: "Kompletní výměna pneu + vyvážení", uk: "Повна заміна шин + балансування" }, price: "1 295 Kč" },
-          { name: { cs: "Demontáž/montáž + vyvážení", uk: "Розбір/збір коліс + балансування" }, price: "1 095 Kč" },
-          { name: { cs: "Sezónní uskladnění pneumatik", uk: "Сезонне зберігання шин" }, price: "1 210 Kč" },
-          { name: { cs: "Likvidace pneumatik (1 ks)", uk: "Утилізація шин (1 шт.)" }, price: "45 Kč" }
-        ]
-      },
-      {
-        title: { cs: "RUNFLAT (16–18\")", uk: "RUNFLAT (16\"–18\")" },
-        rows: [
-          { name: { cs: "Kompletní výměna pneu + vyvážení", uk: "Повна заміна шин + балансування" }, price: "1 595 Kč" },
-          { name: { cs: "Demontáž/montáž + vyvážení", uk: "Розбір/збір коліс + балансування" }, price: "1 295 Kč" },
-          { name: { cs: "Sezónní uskladnění pneumatik", uk: "Сезонне зберігання шин" }, price: "1 210 Kč" },
-          { name: { cs: "Likvidace pneumatik (1 ks)", uk: "Утилізація шин (1 шт.)" }, price: "45 Kč" }
-        ]
-      },
-      {
-        title: { cs: "RUNFLAT (19–23\")", uk: "RUNFLAT (19\"–23\")" },
-        rows: [
-          { name: { cs: "Kompletní výměna pneu + vyvážení", uk: "Повна заміна шин + балансування" }, price: "2 195 Kč" },
-          { name: { cs: "Demontáž/montáž + vyvážení", uk: "Розбір/збір коліс + балансування" }, price: "1 495 Kč" },
-          { name: { cs: "Sezónní uskladnění pneumatik", uk: "Сезонне зберігання шин" }, price: "1 210 Kč" },
-          { name: { cs: "Likvidace pneumatik (1 ks)", uk: "Утилізація шин (1 шт.)" }, price: "45 Kč" }
-        ]
-      },
       {
         title: { cs: "Oprava pneumatik", uk: "Ремонт шин" },
         rows: [
@@ -189,22 +233,18 @@ const sections: PriceSection[] = [
         rows: [
           {
             name: { cs: "Pravidelný servis klimatizace", uk: "Планове ТО кондиціонера" },
-            duration: { cs: "60 min", uk: "60 хв" },
             price: "968 Kč"
           },
           {
             name: { cs: "Kontrola úniků + diagnostika", uk: "Перевірка на витоки + діагностика" },
-            duration: { cs: "60 min", uk: "60 хв" },
             price: "995 Kč"
           },
           {
             name: { cs: "Dezinfekce klimatizace", uk: "Дезінфекція кондиціонера" },
-            duration: { cs: "30 min", uk: "30 хв" },
             price: "695 Kč"
           },
           {
             name: { cs: "Komplexní dezinfekce systému", uk: "Комплексна дезінфекція системи" },
-            duration: { cs: "45 min", uk: "45 хв" },
             price: "995 Kč"
           }
         ],
@@ -224,12 +264,10 @@ const sections: PriceSection[] = [
         rows: [
           {
             name: { cs: "Komplexní diagnostika auta", uk: "Комплексна діагностика авто" },
-            duration: { cs: "30 min", uk: "30 хв" },
             price: "995 Kč"
           },
           {
             name: { cs: "Práce autoelektrikáře", uk: "Робота автоелектрика" },
-            duration: { cs: "60 min", uk: "60 хв" },
             price: "1 195 Kč"
           }
         ],
@@ -249,37 +287,30 @@ const sections: PriceSection[] = [
         rows: [
           {
             name: { cs: "Výměna oleje (olej + filtr)", uk: "Заміна масла (масло + фільтр)" },
-            duration: { cs: "45 min", uk: "45 хв" },
             price: "695 Kč"
           },
           {
             name: { cs: "Výměna oleje (vlastní olej + filtr)", uk: "Заміна масла (своє масло + фільтр)" },
-            duration: { cs: "45 min", uk: "45 хв" },
             price: "1 210 Kč"
           },
           {
             name: { cs: "Výměna brzdových destiček (1 náprava)", uk: "Заміна гальмівних колодок (1 вісь)" },
-            duration: { cs: "45 min", uk: "45 хв" },
             price: "795 Kč"
           },
           {
             name: { cs: "Výměna brzdového kotouče (1 náprava)", uk: "Заміна гальмівного диска (1 вісь)" },
-            duration: { cs: "60 min", uk: "60 хв" },
             price: "995 Kč"
           },
           {
             name: { cs: "Výměna brzdové kapaliny", uk: "Заміна гальмівної рідини" },
-            duration: { cs: "45 min", uk: "45 хв" },
             price: "795 Kč"
           },
           {
             name: { cs: "Kotouče + destičky (1 náprava)", uk: "Диски + колодки (1 вісь)" },
-            duration: { cs: "45 min", uk: "45 хв" },
             price: "1 815 Kč"
           },
           {
             name: { cs: "Kotouče + destičky (vlastní díly)", uk: "Диски + колодки (свої запчастини)" },
-            duration: { cs: "45 min", uk: "45 хв" },
             price: "2 662 Kč"
           }
         ],
@@ -299,17 +330,14 @@ const sections: PriceSection[] = [
         rows: [
           {
             name: { cs: "Kontrola podvozku", uk: "Перевірка стану підвіски" },
-            duration: { cs: "45 min", uk: "45 хв" },
             price: "605 Kč"
           },
           {
             name: { cs: "Geometrie (osobní auto)", uk: "Геометрія (легкові авто)" },
-            duration: { cs: "1 h", uk: "1 год" },
             price: "1 500 Kč"
           },
           {
             name: { cs: "Geometrie (SUV / užitkové)", uk: "Геометрія (комтранс / SUV)" },
-            duration: { cs: "1,5 h", uk: "1,5 год" },
             price: "1 995 Kč"
           }
         ],
@@ -514,6 +542,7 @@ export default function PricesPage() {
                 </div>
 
                 <div className="grid gap-5">
+                  {s.id === "tires" ? <TiresPriceBlock lang={lang} /> : null}
                   {s.blocks.map((b, idx) => {
                     if ("rows" in b) return <PriceTableBlock key={idx} lang={lang} table={b} />;
                     return <NoteBlock key={idx} text={lt(b.note, lang)} />;

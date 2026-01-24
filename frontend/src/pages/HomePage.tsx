@@ -1,7 +1,6 @@
 import { NavLink } from "react-router-dom";
-import { Clock, Shield, Wrench, Star, Phone, CheckCircle2 } from "lucide-react";
+import { Shield, Wrench, Star, Phone, CheckCircle2 } from "lucide-react";
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
-import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { services } from "../data/services";
 import { useI18n } from "../i18n/useI18n";
@@ -122,73 +121,31 @@ export default function HomePage() {
         <div className="absolute bottom-20 left-20 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl"></div>
       </section>
 
-      {/* ПОЧЕМУ МЫ */}
-      <section className="relative py-20 bg-dark-50 overflow-hidden">
+      {/* ВАЖЛИВО (сильні факти) */}
+      <section className="relative py-16 sm:py-20 bg-dark-50 overflow-hidden">
         <TechLines />
         <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">
-              {t("home.whyTitleA")} <span className="text-primary-500">TURBOSERVIS</span>
-            </h2>
-            <p className="text-white/60 text-lg max-w-2xl mx-auto">
-              {t("home.whyText")}
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                icon: Shield,
-                title: t("home.feature.warranty.title"),
-                description: t("home.feature.warranty.desc")
-              },
-              {
-                icon: Clock,
-                title: t("home.feature.fast.title"),
-                description: t("home.feature.fast.desc")
-              },
-              {
-                icon: Wrench,
-                title: t("home.feature.pros.title"),
-                description: t("home.feature.pros.desc")
-              },
-              {
-                icon: Star,
-                title: t("home.feature.prices.title"),
-                description: t("home.feature.prices.desc")
-              }
-            ].map((item, idx) => (
-              <Card key={idx} className="p-6 bg-dark border border-primary-500/20 hover:border-primary-500/50">
-                <div className="w-14 h-14 bg-primary-500/20 rounded-xl flex items-center justify-center mb-4">
-                  <item.icon className="w-7 h-7 text-primary-500" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
-                <p className="text-white/70 leading-relaxed">{item.description}</p>
-              </Card>
-            ))}
-          </div>
-
-          <div className="mt-8 rounded-2xl border border-primary-500/20 bg-dark p-6">
+          <div className="mx-auto max-w-5xl rounded-3xl border border-primary-500/25 bg-gradient-to-br from-dark via-dark-50 to-dark p-6 sm:p-8 shadow-[0_0_0_1px_rgba(16,185,129,0.08),0_30px_80px_-30px_rgba(0,0,0,0.85)]">
             <div className="flex items-center justify-between gap-4">
-              <div className="text-sm font-black tracking-wide text-primary-400">{t("home.noteTitle")}</div>
-              <div className="h-px flex-1 bg-gradient-to-r from-primary-500/40 via-white/10 to-transparent" />
+              <div className="text-base sm:text-lg font-black tracking-wide text-primary-300 uppercase">
+                {t("home.noteTitle")}
+              </div>
+              <div className="h-px flex-1 bg-gradient-to-r from-primary-500/70 via-white/10 to-transparent" />
             </div>
 
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div className="mt-5 grid gap-3 md:grid-cols-2">
               {[
                 // Use existing images shipped in /public/images to avoid 404s.
-                // If you later add dedicated note icons, you can swap these to `note/...`.
                 { key: "home.note.egrDpf", img: "service-egrdpf-800x800.jpg", fallback: Wrench },
-                { key: "home.note.injectorsSoon", img: "service-injectors-800x800.jpg", fallback: Clock },
-                { key: "home.note.vehicles", img: "service-maintenance-800x800.jpg", fallback: Shield },
+                { key: "home.note.injectorsSoon", img: "service-injectors-800x800.jpg", fallback: CheckCircle2 },
                 { key: "home.note.noOverhaul", img: "service-engine-800x800.jpg", fallback: Star },
-                { key: "home.note.b2b", img: "service-parts-800x800.jpg", fallback: CheckCircle2 }
+                { key: "home.note.vehicles", img: "service-maintenance-800x800.jpg", fallback: Shield }
               ].map((item) => (
                 <div
                   key={item.key}
-                  className="flex items-start gap-4 rounded-xl border border-white/10 bg-dark-50/40 p-4 hover:border-primary-500/30 transition-colors"
+                  className="group flex items-start gap-4 rounded-2xl border border-white/10 bg-dark/40 p-4 sm:p-5 hover:border-primary-500/45 hover:bg-dark/60 transition-colors"
                 >
-                  <div className="grid h-14 w-14 place-items-center rounded-xl bg-primary-500/10 ring-1 ring-primary-500/20 overflow-hidden flex-shrink-0">
+                  <div className="grid h-14 w-14 place-items-center rounded-2xl bg-primary-500/10 ring-1 ring-primary-500/25 overflow-hidden flex-shrink-0">
                     <img
                       src={imageUrl(item.img)}
                       alt=""
@@ -200,11 +157,12 @@ export default function HomePage() {
                     />
                     <item.fallback className="hidden h-7 w-7 text-primary-400" />
                   </div>
-                  <div className="text-sm text-white/80 leading-relaxed">{t(item.key)}</div>
+                  <div className="text-[13px] sm:text-sm text-white/85 leading-relaxed">
+                    {t(item.key)}
+                  </div>
                 </div>
               ))}
             </div>
-
           </div>
         </div>
       </section>

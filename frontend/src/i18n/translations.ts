@@ -7,12 +7,12 @@ export const LANG_LABEL: Record<Lang, string> = {
 
 export const dict: Record<Lang, Dict> = {
   cs: {
-    "home.noteTitle": "Důležité",
-    "home.note.noOverhaul": "Nevykonáváme generální opravy motorů (kapitálky).",
+    "home.noteTitle": "DŮLEŽITÉ: naše specializace",
+    "home.note.noOverhaul": "Silná diagnostika a jasný plán oprav — bez zbytečností.",
     "home.note.vehicles": "Servisujeme osobní auta, SUV i dodávky / lehká užitková vozidla.",
     "home.note.b2b": "Spolupracujeme se středními i velkými firmami (fleet / firemní auta).",
     "home.note.egrDpf": "Máme speciální systém pro čištění EGR a DPF (dekarbonizace).",
-    "home.note.injectorsSoon": "Brzy bude k dispozici stolice pro čištění vstřikovačů.",
+    "home.note.injectorsSoon": "Stolice na vstřikovače už funguje: test, čištění a kontrola dávkování.",
 
     "services.soon": "BRZY",
     "services.available": "DOSTUPNÉ",
@@ -105,7 +105,7 @@ export const dict: Record<Lang, Dict> = {
     "home.badge": "Profesionální autoservis",
     "home.heroTitleA": "TURBO",
     "home.heroTitleB": "SERVIS",
-    "home.heroText": "Opravy turbodmychadel, motorů a kompletní servis vašeho vozu.",
+    "home.heroText": "Turbodmychadla, diagnostika, čištění EGR/DPF a vstřikovače — servis s jasným výsledkem.",
     "home.heroTextStrong": "Záruka kvality",
     "home.bookDiagnostics": "Objednat diagnostiku",
     "home.stats.years": "let praxe",
@@ -194,9 +194,9 @@ export const dict: Record<Lang, Dict> = {
     "team.3.exp": "10 let praxe",
     "team.3.spec": "Podvozek a řízení",
 
-    "case.1.t": "Generální oprava motoru BMW X5",
-    "case.1.d": "Kompletní oprava motoru včetně výměny pístní skupiny a vyvážení klikové hřídele.",
-    "case.1.r": "Motor funguje jako nový, bez reklamací.",
+    "case.1.t": "Diagnostika a řešení kouřivosti BMW X5",
+    "case.1.d": "Diagnostika, čištění EGR / sání a řešení DPF podle skutečného stavu.",
+    "case.1.r": "Méně kouře, stabilní chod a lepší reakce motoru.",
     "case.2.t": "Repase turba Mercedes Sprinter",
     "case.2.d": "Výměna CHRA, vyvážení a nastavení aktuátoru.",
     "case.2.r": "Obnovena plná dynamika, spotřeba klesla.",
@@ -342,12 +342,12 @@ export const dict: Record<Lang, Dict> = {
   },
 
   uk: {
-    "home.noteTitle": "Важливо",
-    "home.note.noOverhaul": "Ми не робимо капітальні ремонти двигунів.",
+    "home.noteTitle": "ВАЖЛИВО: наша спеціалізація",
+    "home.note.noOverhaul": "Комп’ютерна діагностика й чіткий план ремонту — тільки по факту.",
     "home.note.vehicles": "Обслуговуємо легкові авто, SUV та мікроавтобуси/легкий комтранс.",
     "home.note.b2b": "Готові до співпраці з середніми та великими компаніями (автопарк).",
     "home.note.egrDpf": "Є спеціальна система для очищення EGR та DPF (декарбонізація).",
-    "home.note.injectorsSoon": "Незабаром буде доступний стенд для очищення форсунок.",
+    "home.note.injectorsSoon": "Стенд для форсунок вже працює: тест, очищення та контроль подачі.",
 
     "services.soon": "СКОРО",
     "services.available": "ДОСТУПНО",
@@ -441,7 +441,7 @@ export const dict: Record<Lang, Dict> = {
     "home.badge": "Професійний автосервіс",
     "home.heroTitleA": "TURBO",
     "home.heroTitleB": "SERVIS",
-    "home.heroText": "Ремонт турбін, двигунів та повне техобслуговування вашого авто.",
+    "home.heroText": "Турбіни, діагностика, чистка EGR/DPF та форсунки — сервіс, який дає результат.",
     "home.heroTextStrong": "Гарантія якості",
     "home.bookDiagnostics": "Записатися на діагностику",
     "home.stats.years": "років досвіду",
@@ -530,9 +530,9 @@ export const dict: Record<Lang, Dict> = {
     "team.3.exp": "10 років досвіду",
     "team.3.spec": "Підвіска та кермове",
 
-    "case.1.t": "Капітальний ремонт двигуна BMW X5",
-    "case.1.d": "Повний капремонт двигуна із заміною поршневої групи та балансуванням колінвала.",
-    "case.1.r": "Двигун працює як новий, без нарікань.",
+    "case.1.t": "Діагностика та вирішення димності BMW X5",
+    "case.1.d": "Діагностика, чистка EGR / впуску та рішення по DPF за реальним станом.",
+    "case.1.r": "Менше диму, рівна робота та краща реакція двигуна.",
     "case.2.t": "Відновлення турбіни Mercedes Sprinter",
     "case.2.d": "Заміна CHRA, балансування та налаштування актуатора.",
     "case.2.r": "Повернули тягу, витрата пального зменшилась.",

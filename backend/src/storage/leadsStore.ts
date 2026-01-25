@@ -83,6 +83,28 @@ export async function countLeadsForDay(iso: string, timeZone = "Europe/Prague"):
   return count;
 }
 
+export async function getDailyLeadSummary(
+  iso: string,
+  timeZone = "Europe/Prague"
+): Promise<{ count: number; lastLeadAt?: string; lastLeadName?: string }> {
+  await ensureDataFile();
+  const raw = await fs.readFile(leadsFile, "utf8");
+  const parsed = safeParseJson<{ leads: Lead[] }>(raw) ?? { leads: [] };
+  const key = dateKey(iso, timeZone);
+  let count = 0;
+  let lastLeadAt: string | undefined;
+  let lastLeadName: string | undefined;
+  for (const l of parsed.leads) {
+    if (dateKey(l.createdAt, timeZone) !== key) continue;
+    count++;
+    if (!lastLeadAt || l.createdAt > lastLeadAt) {
+      lastLeadAt = l.createdAt;
+      lastLeadName = l.name;
+    }
+  }
+  return { count, lastLeadAt, lastLeadName };
+}
+
 function safeParseJson<T>(raw: string): T | null {
   try {
     return JSON.parse(raw) as T;

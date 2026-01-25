@@ -1,4 +1,4 @@
-import { countLeadsForDay, type Lead } from "../storage/leadsStore.js";
+import { countLeadsForDay, getDailyLeadSummary, type Lead } from "../storage/leadsStore.js";
 import https from "node:https";
 import { URL } from "node:url";
 
@@ -63,6 +63,80 @@ function formatDatePrague(iso: string, timeZone: string) {
   const hour = parts.find((p) => p.type === "hour")?.value ?? "00";
   const minute = parts.find((p) => p.type === "minute")?.value ?? "00";
   return { short: `${day}.${month}.${year}`, full: `${day}.${month}.${year} ${hour}:${minute}` };
+}
+
+function formatTimePrague(iso: string, timeZone: string) {
+  const d = new Date(iso);
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit"
+  }).formatToParts(d);
+  const hour = parts.find((p) => p.type === "hour")?.value ?? "00";
+  const minute = parts.find((p) => p.type === "minute")?.value ?? "00";
+  return `${hour}:${minute}`;
+}
+
+function getTimeZoneOffsetMs(date: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  }).formatToParts(date);
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "00";
+  const y = Number(get("year"));
+  const m = Number(get("month"));
+  const d = Number(get("day"));
+  const h = Number(get("hour"));
+  const min = Number(get("minute"));
+  const s = Number(get("second"));
+  const asUtc = Date.UTC(y, m - 1, d, h, min, s);
+  return asUtc - date.getTime();
+}
+
+function makeZonedDateUtcMs(
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+  timeZone: string
+) {
+  const guessUtc = Date.UTC(year, month - 1, day, hour, minute, 0);
+  const offset = getTimeZoneOffsetMs(new Date(guessUtc), timeZone);
+  return guessUtc - offset;
+}
+
+function getNextDailyReportDate(timeZone: string, hour = 21, minute = 0) {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(now);
+  const y = Number(parts.find((p) => p.type === "year")?.value ?? "0000");
+  const m = Number(parts.find((p) => p.type === "month")?.value ?? "01");
+  const d = Number(parts.find((p) => p.type === "day")?.value ?? "01");
+  let targetUtc = makeZonedDateUtcMs(y, m, d, hour, minute, timeZone);
+  if (targetUtc <= now.getTime()) {
+    const tomorrow = new Date(Date.UTC(y, m - 1, d) + 24 * 60 * 60 * 1000);
+    const tParts = new Intl.DateTimeFormat("en-GB", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).formatToParts(tomorrow);
+    const ty = Number(tParts.find((p) => p.type === "year")?.value ?? "0000");
+    const tm = Number(tParts.find((p) => p.type === "month")?.value ?? "01");
+    const td = Number(tParts.find((p) => p.type === "day")?.value ?? "01");
+    targetUtc = makeZonedDateUtcMs(ty, tm, td, hour, minute, timeZone);
+  }
+  return new Date(targetUtc);
 }
 
 function normalizePhoneForLinks(raw: string) {
@@ -207,6 +281,84 @@ async function sendTelegramMessage(
     req.write(payload);
     req.end();
   });
+}
+
+async function sendTelegramToChats(cfg: TelegramConfig, text: string) {
+  await Promise.all(
+    cfg.chatIds.map(async (chatId) => {
+      try {
+        await sendTelegramMessage(cfg.token, chatId, { text });
+      } catch (e) {
+        if (e instanceof TelegramApiError) {
+          const migrateTo = e.payload?.parameters?.migrate_to_chat_id;
+          if (migrateTo) {
+            const newChatId = String(migrateTo);
+            console.warn("[telegram] chat migrated (update TELEGRAM_CHAT_IDS)", {
+              oldChatId: chatId,
+              newChatId
+            });
+            try {
+              await sendTelegramMessage(cfg.token, newChatId, { text });
+              return;
+            } catch (e2) {
+              console.warn("[telegram] send failed", { chatId: newChatId, error: String(e2) });
+              return;
+            }
+          }
+        }
+        console.warn("[telegram] send failed", { chatId, error: String(e) });
+      }
+    })
+  );
+}
+
+async function formatDailyReportMessage(nowIso: string, timeZone: string) {
+  const date = formatDatePrague(nowIso, timeZone);
+  const { count, lastLeadAt, lastLeadName } = await getDailyLeadSummary(nowIso, timeZone);
+  const lines: string[] = [];
+  lines.push(`📊 Щоденний звіт • ${date.short}`);
+  lines.push("");
+  if (count > 0) {
+    lines.push(`✅ Заявок сьогодні: ${count}`);
+    if (lastLeadAt) {
+      lines.push(`⏱ Остання заявка: ${formatTimePrague(lastLeadAt, timeZone)}`);
+    }
+    if (lastLeadName) {
+      // keep for future use if needed
+    }
+  } else {
+    lines.push("📭 Заявок сьогодні: 0");
+  }
+  lines.push("");
+  return lines.join("\n");
+}
+
+let dailyReportTimer: NodeJS.Timeout | null = null;
+
+export function startDailyTelegramReport() {
+  const cfg = getTelegramConfig();
+  if (!cfg) return;
+
+  const timeZone = process.env.LEADS_TIMEZONE ?? "Europe/Prague";
+  if (dailyReportTimer) clearTimeout(dailyReportTimer);
+
+  const scheduleNext = () => {
+    const nextAt = getNextDailyReportDate(timeZone, 21, 0);
+    const delay = Math.max(5_000, nextAt.getTime() - Date.now());
+    dailyReportTimer = setTimeout(async () => {
+      try {
+        const nowIso = new Date().toISOString();
+        const text = await formatDailyReportMessage(nowIso, timeZone);
+        await sendTelegramToChats(cfg, text);
+      } catch (e) {
+        console.warn("[telegram] daily report failed", { error: String(e) });
+      } finally {
+        scheduleNext();
+      }
+    }, delay);
+  };
+
+  scheduleNext();
 }
 
 async function sendTelegramContact(token: string, chatId: string, phoneNumber: string, firstName: string) {

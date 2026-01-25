@@ -11,7 +11,7 @@ import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import { leadSchema } from "./validation/leadSchema.js";
 import { appendLead, listLeads } from "./storage/leadsStore.js";
-import { notifyTelegramLead } from "./notify/telegram.js";
+import { notifyTelegramLead, startDailyTelegramReport } from "./notify/telegram.js";
 
 const app = express();
 
@@ -152,6 +152,7 @@ if (fs.existsSync(distDir)) {
 app.listen(PORT, () => {
   console.log(`[backend] listening on http://localhost:${PORT}`);
   console.log(`[backend] CORS origin: ${IS_DEV ? "(dev: reflect request origin)" : FRONTEND_ORIGIN}`);
+  startDailyTelegramReport();
 });
 
 function clampNumber(n: number, min: number, max: number) {

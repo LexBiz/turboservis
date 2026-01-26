@@ -125,31 +125,31 @@ export default function HomePage() {
       <section className="relative py-16 sm:py-20 bg-dark-50 overflow-hidden">
         <TechLines />
         <div className="container mx-auto px-4 relative z-10">
-          <div className="mx-auto max-w-5xl rounded-3xl border border-primary-500/25 bg-gradient-to-br from-dark via-dark-50 to-dark p-6 sm:p-8 shadow-[0_0_0_1px_rgba(16,185,129,0.08),0_30px_80px_-30px_rgba(0,0,0,0.85)]">
+          <div className="mx-auto max-w-6xl rounded-3xl border border-primary-500/25 bg-gradient-to-br from-dark via-dark-50 to-dark p-7 sm:p-10 shadow-[0_0_0_1px_rgba(16,185,129,0.08),0_30px_80px_-30px_rgba(0,0,0,0.85)]">
             <div className="flex items-center justify-between gap-4">
-              <div className="text-base sm:text-lg font-black tracking-wide text-primary-300 uppercase">
+              <div className="text-lg sm:text-xl font-black tracking-wide text-primary-300 uppercase">
                 {t("home.noteTitle")}
               </div>
               <div className="h-px flex-1 bg-gradient-to-r from-primary-500/70 via-white/10 to-transparent" />
             </div>
 
-            <div className="mt-5 grid gap-3 md:grid-cols-2">
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
               {[
-                // Use existing images shipped in /public/images to avoid 404s.
-                { key: "home.note.egrDpf", img: "service-egrdpf-800x800.jpg", fallback: Wrench },
-                { key: "home.note.injectorsSoon", img: "service-injectors-800x800.jpg", fallback: CheckCircle2 },
-                { key: "home.note.noOverhaul", img: "service-engine-800x800.jpg", fallback: Star },
-                { key: "home.note.vehicles", img: "service-maintenance-800x800.jpg", fallback: Shield }
+                // Custom images for the IMPORTANT block (put them into /frontend/public/images).
+                { key: "home.note.egrDpf", img: "home-important-egrdpf-800x800.jpg", fallback: Wrench },
+                { key: "home.note.injectorsSoon", img: "home-important-injectors-800x800.jpg", fallback: CheckCircle2 },
+                { key: "home.note.noOverhaul", img: "home-important-diagnostics-800x800.jpg", fallback: Star },
+                { key: "home.note.vehicles", img: "home-important-vehicles-800x800.jpg", fallback: Shield }
               ].map((item) => (
                 <div
                   key={item.key}
-                  className="group flex items-start gap-4 rounded-2xl border border-white/10 bg-dark/40 p-4 sm:p-5 hover:border-primary-500/45 hover:bg-dark/60 transition-colors"
+                  className="group flex items-start gap-4 rounded-2xl border border-white/10 bg-dark/40 p-5 sm:p-6 hover:border-primary-500/45 hover:bg-dark/60 transition-colors"
                 >
-                  <div className="grid h-14 w-14 place-items-center rounded-2xl bg-primary-500/10 ring-1 ring-primary-500/25 overflow-hidden flex-shrink-0">
+                  <div className="grid h-16 w-16 place-items-center rounded-2xl bg-primary-500/10 ring-1 ring-primary-500/25 overflow-hidden flex-shrink-0">
                     <img
                       src={imageUrl(item.img)}
                       alt=""
-                      className="h-14 w-14 object-contain"
+                      className="h-16 w-16 object-cover"
                       onError={(e) => {
                         e.currentTarget.classList.add("hidden");
                         (e.currentTarget.nextElementSibling as HTMLElement | null)?.classList.remove("hidden");
